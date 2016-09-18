@@ -1,0 +1,10 @@
+[
+  {
+    "name": "iislog",
+    "connection_string": "host=10.20.1.11 port=5432 dbname=iis_logs user=pg password=mypass"
+  },
+  {
+    "name": "iislog1",
+    "connection_string": "host=10.20.2.12 port=5432 dbname=iis_logs user=pg password=mypass"
+  }
+]
