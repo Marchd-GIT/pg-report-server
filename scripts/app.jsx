@@ -59,7 +59,7 @@ var Interface = React.createClass({
                     return (
                         <div>
                             <p>{item.name}</p>
-                            <input className="datetime" id={item.id} type="text" />
+                            <input className="datetime" id={item.id} type="text"/>
                         </div>
                     );
                 } else if (item.type == 'int') {
@@ -81,7 +81,7 @@ var Interface = React.createClass({
             return dataField;
         }
     },
-    prepareData:function(){
+    prepareData: function () {
         var currentDS = this.state.currDS;
         var params = null;
 
@@ -92,13 +92,13 @@ var Interface = React.createClass({
                 }
             });
 
-            var paramsArray = params.map(function(item, index){
+            var paramsArray = params.map(function (item, index) {
                 var element = document.getElementById(item.id);
-                if(element){
+                if (element) {
                     return element.value;
                 }
             });
-            var query = {DataSet:this.state.currDS,args:paramsArray};
+            var query = {DataSet: this.state.currDS, args: paramsArray};
             return JSON.stringify(query);
 
         }
@@ -108,67 +108,117 @@ var Interface = React.createClass({
         $.ajax({
             type: "POST",
             url: '/',
-            data: {action: 'run_query',query: data},
+            data: {action: 'run_query', query: data},
             success: function (data) {
                 console.log(data);
                 this.drawTable(data);
             }.bind(this)
         })
     },
-    componentDidUpdate:function(){
+    dataRequestXLS: function () {
+        var data = this.prepareData();
+        $.ajax({
+            type: "POST",
+            url: '/',
+            data: {action: 'run_query_xls', query: data},
+            success: function (data) {
+                console.log(this.state);
+                var blob = new Blob([data]);
+                var link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+
+                link.download = this.state.dataSets[this.state.currDS].NameReport + ".xls";
+                link.click();
+            }.bind(this)
+        })
+    },
+    dataRequestCSV: function () {
+        var data = this.prepareData();
+        $.ajax({
+            type: "POST",
+            url: '/',
+            data: {action: 'run_query_csv', query: data},
+            success: function (data) {
+                console.log(this.state);
+                var blob = new Blob([data]);
+                var link = document.createElement('a');
+                link.href = window.URL.createObjectURL(blob);
+                link.download = this.state.dataSets[this.state.currDS].NameReport + ".csv";
+                link.click();
+            }.bind(this)
+        })
+    },
+
+    componentDidUpdate: function () {
         $('.datetime').mask('0000-00-00 00:00:00');
     },
-    drawTable:function(data){
+    drawTable: function (data) {
         var table = null;
         var header = null;
         var body = null;
-        if(data.fields){
-            header = data.fields.map(function(item, index){
-               return (
-                   <th>{item}</th>
-               )
+        if (data.fields) {
+            header = data.fields.map(function (item, index) {
+                return (
+                    <th>{item}</th>
+                )
             });
-            body = data.rows.map(function(row, index){
-               return(
-               <tr>
-                {
-                (function(){
-                  var items = row.map(function(item, index){
-                      return(
-                            <td>{item}</td>
-                      )
-                  });
-                    return items;
-                })()
-                }
-                </tr>
-               )
+            body = data.rows.map(function (row, index) {
+                return (
+                    <tr>
+                        {
+                            (function () {
+                                var items = row.map(function (item, index) {
+                                    return (
+                                        <td>{item}</td>
+                                    )
+                                });
+                                return items;
+                            })()
+                        }
+                    </tr>
+                )
             });
             console.log(body);
         }
-        table = <table><tr>{header}</tr>{body}</table>;
-        this.setState({table:table});
+        table = <table>
+            <tr>{header}</tr>
+            {body}</table>;
+        this.setState({table: table});
         console.log(header);
     },
     render: function () {
 
         return (
-            <div>
-                <div>
-                    <select onChange={this.setCurrDS} value={this.state.currDS}>
-                        <option value='default' key='default'>Выберите отчет</option>
-                        {this.getReportsList()}
-                    </select>
+            <div className="wrapper">
+                <div className="ui">
+                    <div className="logo">
+                        Postgres Report Server
+                    </div>
+                    <div>
+                        <select onChange={this.setCurrDS} value={this.state.currDS}>
+                            <option value='default' key='default'>Выберите отчет</option>
+                            {this.getReportsList()}
+                        </select>
+                    </div>
+                    <div>
+                        {this.getRequestParams()}
+                    </div>
+                    <div>
+                        <button style={{display: this.state.currDS == 'default' ? 'none' : ''}}
+                                onClick={this.dataRequest}>
+                            Поехали
+                        </button>
+                        <button style={{display: this.state.currDS == 'default' ? 'none' : ''}}
+                                onClick={this.dataRequestCSV}>
+                            svc
+                        </button>
+                        <button style={{display: this.state.currDS == 'default' ? 'none' : ''}}
+                                onClick={this.dataRequestXLS}>
+                            xls
+                        </button>
+                    </div>
                 </div>
-                <div>
-                    {this.getRequestParams()}
-                </div>
-                <div>
-                    <button style={{display: this.state.currDS == 'default' ? 'none' : ''}} onClick={this.dataRequest}>
-                        Поехали
-                    </button>
-                </div>
-                <div>
+                <div className="dataTable">
                     {this.state.table}
                 </div>
             </div>
@@ -179,10 +229,7 @@ var Interface = React.createClass({
 var App = React.createClass({
     render: function () {
         return (
-            <div>
-                <Interface />
-                {/*<DataTable />*/}
-            </div>
+            <Interface />
         );
     }
 });
