@@ -116,7 +116,7 @@ function query_run($connection_string, $args_array, $query_string, $format)
 
     //$result = pg_execute($dbconn, "my_query", $args_array);
     pg_send_query($dbconn, $prepquery);
-    while (!$result = pg_get_result($dbconn)) ;{
+    $result = pg_get_result($dbconn);
         if (!$result) {
             echo "An error occured.\n";
             exit;
@@ -208,7 +208,6 @@ function query_run($connection_string, $args_array, $query_string, $format)
             }
 
         }
-    }
     pg_free_result($result);
     pg_close($dbconn);
 }
