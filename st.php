@@ -48,6 +48,7 @@ function get_connection_string($id_data_store)
     $file = fopen($path, "r");
     $json_text = fread($file, filesize($path));
     $json = json_decode($json_text);
+
     foreach ($json as $value)
         if ($id_data_store == $value->id)
             return $value->connection_string;
@@ -105,13 +106,13 @@ function query_run($connection_string, $args_array, $query_string, $format)
     //echo  pg_prepare($dbconn, "my_query", '$args_array');
     $rrr = 0;
     $prepquery = '';
-    var_dump($args_array);
+    //var_dump($args_array);
     while (count($args_array) > $rrr) {
         $prepquery = preg_replace('/\$' . ($rrr + 1) . '/', "'" . $args_array[$rrr] . "'", $query);
         $query = $prepquery;
         $rrr = $rrr + 1;
     }
-    echo $prepquery;
+    //echo $prepquery;
 
 
     //$result = pg_execute($dbconn, "my_query", $args_array);
