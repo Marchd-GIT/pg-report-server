@@ -150,7 +150,7 @@ var Interface = React.createClass({
     },
 
     componentDidUpdate: function () {
-        $('.datetime').mask('0000-00-00 00:00:00');
+        $('.datetime').mask('0000-00-00 00:00:00',{placeholder: "__-__-____ __:__:__"});
     },
     drawTable: function (data) {
         var table = null;
@@ -206,15 +206,15 @@ var Interface = React.createClass({
                     <div>
                         <button style={{display: this.state.currDS == 'default' ? 'none' : ''}}
                                 onClick={this.dataRequest}>
-                            Поехали
-                        </button>
+                            Сформировать
+                        </button><br/>
                         <button style={{display: this.state.currDS == 'default' ? 'none' : ''}}
                                 onClick={this.dataRequestCSV}>
-                            svc
+                             CSV
                         </button>
-                        <button style={{display: this.state.currDS == 'default' ? 'none' : ''}}
+                            <button style={{display: this.state.currDS == 'default' ? 'none' : ''}}
                                 onClick={this.dataRequestXLS}>
-                            xls
+                            XLS
                         </button>
                     </div>
                 </div>

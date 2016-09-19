@@ -27,6 +27,7 @@ query=
 function get_select_row()
 {
     $query = isset($_POST['query']) ? $_POST['query'] : '';
+    $sql_query = "";
     if ($query !== '') {
         $json_params = json_decode($query);
         $datasets = get_datasets(true);
@@ -35,7 +36,8 @@ function get_select_row()
                 $sql_query = $val->query;
         }
         $empty = [];
-        query_run(get_connection_string($datasets[$json_params->DataSet]->DataStore), $empty, $sql_query);
+        if ($sql_query != '')
+        query_run(get_connection_string($datasets[$json_params->DataSet]->DataStore), $empty, $sql_query,"json");
     } else
         echo "Bed query!";
 }
