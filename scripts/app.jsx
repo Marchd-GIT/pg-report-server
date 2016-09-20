@@ -108,6 +108,10 @@ var Interface = React.createClass({
         $.ajax({
             type: "POST",
             url: '/',
+            beforeSend: function(){
+                console.log("LOAD!");
+                this.drawLoad();
+            }.bind(this),
             data: {action: 'run_query', query: data},
             success: function (data) {
                 console.log(data);
@@ -150,7 +154,7 @@ var Interface = React.createClass({
     },
 
     componentDidUpdate: function () {
-        $('.datetime').mask('0000-00-00 00:00:00',{placeholder: "__-__-____ __:__:__"});
+        $('.datetime').mask('0000-00-00 00:00:00',{placeholder: "____-__ __:__:__"});
     },
     drawTable: function (data) {
         var table = null;
@@ -185,6 +189,9 @@ var Interface = React.createClass({
             {body}</table>;
         this.setState({table: table});
         console.log(header);
+    },
+    drawLoad: function () {
+        this.setState({table: <div>Loading....</div>});
     },
     render: function () {
 

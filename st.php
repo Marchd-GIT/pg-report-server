@@ -101,7 +101,9 @@ function query_run($connection_string, $args_array, $query_string, $format)
         echo "An error occured connect to database.\n";
         exit;
     }
-    $query = base64_decode($query_string);
+    $resw='';
+    $query = base64_decode("$query_string");
+
 
     //echo  pg_prepare($dbconn, "my_query", '$args_array');
     $rrr = 0;
@@ -116,8 +118,23 @@ function query_run($connection_string, $args_array, $query_string, $format)
 
 
     //$result = pg_execute($dbconn, "my_query", $args_array);
+    //echo $prepquery;
     pg_send_query($dbconn, $prepquery);
+
+    while(pg_connection_busy($dbconn)){
+        //echo 1;
+        sleep(1);
+    }
+
     $result = pg_get_result($dbconn);
+
+
+    //
+    //echo pg_result_status($result);
+    //while(pg_result_status($result) != 3)
+    //{
+     //   echo pg_result_status($result);
+    //};
         if (!$result) {
             echo "An error occured.\n";
             exit;
@@ -231,7 +248,7 @@ function json_query_run($format)
         //var_dump($datasets);
         //echo get_connection_string($cur_dataset->DataStore);
         //var_dump($json_params->args);
-        //echo $cur_dataset->SQL_Query;
+        //echo $cur_dataset->SQL_Query."!!!!";
         query_run(get_connection_string($cur_dataset->DataStore), $json_params->args, $cur_dataset->SQL_Query, $format);
 
     } else {
