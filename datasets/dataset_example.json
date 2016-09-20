@@ -22,8 +22,8 @@
       "id": "4",
       "name": "s_ip",
       "type": "query",
-      "query": "SELECT s_ip FROM iislogi group by s_ip"
+      "query": "U0VMRUNUIHNfaXAgRlJPTSBpaXNsb2dpIGdyb3VwIGJ5IHNfaXA7"
     }
   ],
-  "SQL_Query": "U0VMRUNUICogRlJPTSBpaXNsb2dpIHdoZXJlICBcInRpbWVzdGFtcFwiIEJFVFdFRU4gJDEgYW5kICQyICBhbmQgc19pcCA9ICQ0IGxpbWl0ICQzOw=="
+  "SQL_Query": "U1FMX1F1ZXJ5IjogIlNFTEVDVCAqIEZST00gaWlzbG9naSB3aGVyZSAgXCJ0aW1lc3RhbXBcIiBCRVRXRUVOICQxIGFuZCAkMiAgYW5kIHNfaXAgPSAkNCBsaW1pdCAkMzs="
 }

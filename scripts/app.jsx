@@ -12,7 +12,8 @@ var Interface = React.createClass({
             dataSets: null,
             currDS: 'default',
             state: null,
-            table: null
+            table: null,
+            status: null
         }
     },
     componentDidMount: function () {
@@ -104,18 +105,24 @@ var Interface = React.createClass({
         }
     },
     dataRequest: function () {
+        this.setState(
+            {status: 'loading'}
+        )
         var data = this.prepareData();
         $.ajax({
             type: "POST",
             url: '/',
-            beforeSend: function(){
+            /*beforeSend: function () {
                 console.log("LOAD!");
                 this.drawLoad();
-            }.bind(this),
+            }.bind(this),*/
             data: {action: 'run_query', query: data},
             success: function (data) {
                 console.log(data);
                 this.drawTable(data);
+                this.setState({
+                    status: 'ready'
+                })
             }.bind(this)
         })
     },
@@ -154,7 +161,7 @@ var Interface = React.createClass({
     },
 
     componentDidUpdate: function () {
-        $('.datetime').mask('0000-00-00 00:00:00',{placeholder: "____-__ __:__:__"});
+        $('.datetime').mask('0000-00-00 00:00:00', {placeholder: "____-__ __:__:__"});
     },
     drawTable: function (data) {
         var table = null;
@@ -214,19 +221,20 @@ var Interface = React.createClass({
                         <button style={{display: this.state.currDS == 'default' ? 'none' : ''}}
                                 onClick={this.dataRequest}>
                             Сформировать
-                        </button><br/>
+                        </button>
+                        <br/>
                         <button style={{display: this.state.currDS == 'default' ? 'none' : ''}}
                                 onClick={this.dataRequestCSV}>
-                             CSV
+                            CSV
                         </button>
-                            <button style={{display: this.state.currDS == 'default' ? 'none' : ''}}
+                        <button style={{display: this.state.currDS == 'default' ? 'none' : ''}}
                                 onClick={this.dataRequestXLS}>
                             XLS
                         </button>
                     </div>
                 </div>
                 <div className="dataTable">
-                    {this.state.table}
+                    {this.state.status == 'loading' ? 'loading...' : this.state.table}
                 </div>
             </div>
         );
