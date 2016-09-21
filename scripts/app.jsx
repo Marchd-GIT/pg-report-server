@@ -1,7 +1,43 @@
 var DataTable = React.createClass({
+  prepareTable:function(data){
+      console.log(data);
+      var header = null;
+      var body = null;
+      if (data && data.fields) {
+          header = data.fields.map(function (item, index) {
+              return (
+                  <th>{item}</th>
+              )
+          });
+          body = data.rows.map(function (row, index) {
+              return (
+                  <tr>
+                      {
+                          (function () {
+                              var items = row.map(function (item, index) {
+                                  return (
+                                      <td>{item}</td>
+                                  )
+                              });
+                              return items;
+                          })()
+                      }
+                  </tr>
+              )
+          });
+          console.log(body);
+      }
+      var table = <table>
+          <tr>{header}</tr>
+          {body}</table>;
+      return table;
+  },
+
   render: function() {
     return (
-        <table></table>
+        <div>
+            {this.prepareTable(this.props.data.tableData)}
+        </div>
     );
   }
 });
@@ -89,7 +125,7 @@ var Interface = React.createClass({
             dataSets: null,
             currDS: 'default',
             state: null,
-            table: null,
+            tableData: null,
             status: null,
             error: null
         }
@@ -202,7 +238,7 @@ var Interface = React.createClass({
             success: function (data) {
                 if(data.rows.length){
                     this.setState({error:null});
-                    this.drawTable(data);
+                    this.setState({tableData:data});
                 }else{
                     this.setState({error:'Data not found!'});
                 }
@@ -245,40 +281,10 @@ var Interface = React.createClass({
             }.bind(this)
         })
     },
-    drawTable: function (data) {
-        var table = null;
-        var header = null;
-        var body = null;
-        if (data.fields) {
-            header = data.fields.map(function (item, index) {
-                return (
-                    <th>{item}</th>
-                )
-            });
-            body = data.rows.map(function (row, index) {
-                return (
-                    <tr>
-                        {
-                            (function () {
-                                var items = row.map(function (item, index) {
-                                    return (
-                                        <td>{item}</td>
-                                    )
-                                });
-                                return items;
-                            })()
-                        }
-                    </tr>
-                )
-            });
-            console.log(body);
-        }
-        table = <table>
-            <tr>{header}</tr>
-            {body}</table>;
-        this.setState({table: table});
-        console.log(header);
+    drawTable: function () {
+        return <DataTable data={{tableData:this.state.tableData}} />
     },
+
     render: function () {
 
         return (
@@ -313,7 +319,7 @@ var Interface = React.createClass({
                     </div>
                 </div>
                 <div className="dataTable">
-                    {this.state.status == 'loading' ? 'loading...' : this.state.error ? this.state.error : this.state.table}
+                    {this.state.status == 'loading' ? 'loading...' : this.state.error ? this.state.error : this.drawTable()}
                 </div>
             </div>
         );
