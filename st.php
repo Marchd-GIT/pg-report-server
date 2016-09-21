@@ -1,4 +1,5 @@
 <?php
+
 /*
 Запросы:
 POST
@@ -24,6 +25,45 @@ query=
 	"ID_Params" : "4"
 }
 */
+
+
+class MyDB extends SQLite3
+{
+    function __construct()
+    {
+        $this->open('/tmp/dbmain');
+    }
+}
+
+function sqlite_query_action($query)
+{
+
+    $db = new MyDB();
+    $sql = <<<EOF
+    $query;
+EOF;
+
+    $result = $db->query($sql);
+    return $result;
+    //db->exec($sql);
+
+
+    //$db->exec("DROP TABLE foo");
+    // $db->exec('CREATE TABLE query_result (id,result)');
+    //$db->exec("INSERT INTO query_result (id,result) VALUES ('2873618273618726318726318337','test etete')");
+
+    //$result = $db->query('SELECT * FROM query_result');
+    //$db->query("delete from query_result where  id like '28736%'");
+
+
+    // while($row = $result->fetchArray() ){
+    //    echo $row['id']."\n";
+    //    echo $row['result']."\n";
+    // }
+
+    // exit;
+}
+
 function get_select_row()
 {
     $query = isset($_POST['query']) ? $_POST['query'] : '';
@@ -95,23 +135,6 @@ function json_params_get($dataset_file, $type)
 function query_run($connection_string, $args_array, $query_string, $format)
 {
 
-/* /*   class MyDB extends SQLite3
-    {
-        function __construct()
-        {
-            $this->open('/tmp/dbmain');
-        }
-    }
-
-    $db = new MyDB();
-
-    //$db->exec('CREATE TABLE foo (bar STRING)');
-    $db->exec("INSERT INTO foo (bar) VALUES ('This is a test12')");
-
-    $result = $db->query('SELECT * FROM foo');
-    var_dump($result->fetchArray());
-    exit;*/
-
 
     $dbconn = pg_pconnect($connection_string);
 
@@ -122,22 +145,33 @@ function query_run($connection_string, $args_array, $query_string, $format)
     $resw = '';
     $query = base64_decode("$query_string");
 
+    $counter = 0;
 
-    $rrr = 0;
-    $prepquery = '';
-    if($args_array != []) {
-        while (count($args_array) > $rrr) {
-            $prepquery = preg_replace('/\$' . ($rrr + 1) . '/', "'" . $args_array[$rrr] . "'", $query);
+    if ($args_array != []) {
+        while (count($args_array) > $counter) {
+            $prepquery = preg_replace('/\$' . ($counter + 1) . '/', "'" . $args_array[$counter] . "'", $query);
             $query = $prepquery;
-            $rrr = $rrr + 1;
+            $counter = $counter + 1;
         }
     }
+
     pg_send_query($dbconn, $query);
+    $counter = 0;
 
     while (pg_connection_busy($dbconn)) {
         sleep(1);
+        $counter + 1;
+        if ($counter > 30) {
+            ob_start();
+            echo '{"fields":["Yor","query"],"rows":[["is very","long"]]}';
+            $size = ob_get_length();
+            header("Content-Length: $size");
+            header('Connection: close');
+            ob_end_flush();
+            ob_flush();
+            flush();
+        }
     }
-
     $result = pg_get_result($dbconn);
 
     if (!$result) {
