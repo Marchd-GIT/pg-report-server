@@ -6,6 +6,48 @@
 //   }
 // });
 
+var Query = React.createClass({
+    getInitialState: function(){
+      return {
+          options: null
+      }
+    },
+    componentDidMount: function(){
+        this.getQueryParams(this.props.item.params.id);
+    },
+    getQueryParams:function(id){
+        var data = JSON.stringify({'DataSet': this.props.currDS.ds, 'ID_Params': id});
+        console.log(data);
+        $.ajax({
+            type: "POST",
+            url: '/',
+            data: {action: 'get_select_row',query: data},
+            success: function (data) {
+                console.log(data);
+                this.prepareQuery(data);
+            }.bind(this)
+        });
+    },
+    prepareQuery: function(data){
+        var options = data.rows.map(function(item, index){
+            return(
+                <option value={item}>{item}</option>
+            )
+        });
+        console.log(options);
+        this.setState({options:options});
+    },
+    render: function() {
+
+    return (
+        <div>
+            <p>{this.props.item.params.name}</p>
+            <select id={this.props.item.params.id}>{this.state.options}</select>
+        </div>
+    );
+  }
+});
+
 var Interface = React.createClass({
     getInitialState: function () {
         return {
@@ -13,7 +55,8 @@ var Interface = React.createClass({
             currDS: 'default',
             state: null,
             table: null,
-            status: null
+            status: null,
+            error: null
         }
     },
     componentDidMount: function () {
@@ -44,7 +87,37 @@ var Interface = React.createClass({
         }
         return options;
     },
-    getRequestParams(){
+    drawText: function(item){
+        return (
+            <div>
+                <p>{item.name}</p>
+                <input id={item.id} type="text"/>
+            </div>
+        );
+    },
+    drawInt: function(item){
+        return (
+            <div>
+                <p>{item.name}</p>
+                <input id={item.id} type="text"/>
+            </div>
+        );
+    },
+    drawDateTime: function(item){
+        return (
+            <div>
+                <p>{item.name}</p>
+                <input className="datetime" id={item.id} type="text"/>
+            </div>
+        );
+    },
+    drawSelect: function(item){
+        return(
+            <Query item={{params: item}} currDS={{ds:this.state.currDS}}/>
+        )
+    },
+    getRequestParams:function(){
+        var self = this;
         var currentDS = this.state.currDS;
         var params = null;
 
@@ -57,26 +130,13 @@ var Interface = React.createClass({
 
             var dataField = params.map(function (item, index) {
                 if (item.type == 'timestamp') {
-                    return (
-                        <div>
-                            <p>{item.name}</p>
-                            <input className="datetime" id={item.id} type="text"/>
-                        </div>
-                    );
+                    return self.drawDateTime(item);
                 } else if (item.type == 'int') {
-                    return (
-                        <div>
-                            <p>{item.name}</p>
-                            <input id={item.id} type="text"/>
-                        </div>
-                    );
+                    return self.drawInt(item);
                 } else if (item.type == 'string') {
-                    return (
-                        <div>
-                            <p>{item.name}</p>
-                            <input id={item.id} type="text"/>
-                        </div>
-                    );
+                    return self.drawText(item);
+                }else if(item.type == 'query'){
+                    return self.drawSelect(item);
                 }
             });
             return dataField;
@@ -112,14 +172,14 @@ var Interface = React.createClass({
         $.ajax({
             type: "POST",
             url: '/',
-            /*beforeSend: function () {
-                console.log("LOAD!");
-                this.drawLoad();
-            }.bind(this),*/
             data: {action: 'run_query', query: data},
             success: function (data) {
                 console.log(data);
-                this.drawTable(data);
+                if(data.rows.length){
+                    this.drawTable(data);
+                }else{
+                    this.setState({error:'Data not found!'});
+                }
                 this.setState({
                     status: 'ready'
                 })
@@ -197,9 +257,6 @@ var Interface = React.createClass({
         this.setState({table: table});
         console.log(header);
     },
-    drawLoad: function () {
-        this.setState({table: <div>Loading....</div>});
-    },
     render: function () {
 
         return (
@@ -234,7 +291,7 @@ var Interface = React.createClass({
                     </div>
                 </div>
                 <div className="dataTable">
-                    {this.state.status == 'loading' ? 'loading...' : this.state.table}
+                    {this.state.status == 'loading' ? 'loading...' : this.state.error ? this.state.error : this.state.table}
                 </div>
             </div>
         );
