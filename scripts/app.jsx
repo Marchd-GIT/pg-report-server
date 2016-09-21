@@ -1,12 +1,47 @@
-// var DataTable = React.createClass({
-//   render: function() {
-//     return (
-//
-//     );
-//   }
-// });
+var DataTable = React.createClass({
+  render: function() {
+    return (
+        <table></table>
+    );
+  }
+});
+var TextInput = React.createClass({
+    render: function(){
+        return (
+            <div>
+                <p>{this.props.data.item.name}</p>
+                <input id={this.props.data.item.id} type="text"/>
+            </div>
+        );
+    }
+});
 
-var Query = React.createClass({
+var IntInput = React.createClass({
+    render: function(){
+        return (
+            <div>
+                <p>{this.props.data.item.name}</p>
+                <input id={this.props.data.item.id} type="text"/>
+            </div>
+        );
+    }
+});
+
+var DateTimeInput = React.createClass({
+    componentDidMount: function () {
+        $('#' + this.props.data.item.id).mask('0000-00-00 00:00:00', {placeholder: "____-__ __:__:__"});
+    },
+    render: function(){
+        return (
+            <div>
+                <p>{this.props.data.item.name}</p>
+                <input className="datetime" id={this.props.data.item.id} type="text"/>
+            </div>
+        );
+    }
+});
+
+var QuerySelect = React.createClass({
     getInitialState: function(){
       return {
           options: null
@@ -89,31 +124,22 @@ var Interface = React.createClass({
     },
     drawText: function(item){
         return (
-            <div>
-                <p>{item.name}</p>
-                <input id={item.id} type="text"/>
-            </div>
+            <TextInput data={{item:item}}/>
         );
     },
     drawInt: function(item){
         return (
-            <div>
-                <p>{item.name}</p>
-                <input id={item.id} type="text"/>
-            </div>
+            <IntInput data={{item:item}}/>
         );
     },
     drawDateTime: function(item){
         return (
-            <div>
-                <p>{item.name}</p>
-                <input className="datetime" id={item.id} type="text"/>
-            </div>
+           <DateTimeInput data={{item:item}}/>
         );
     },
     drawSelect: function(item){
         return(
-            <Query item={{params: item}} currDS={{ds:this.state.currDS}}/>
+            <QuerySelect item={{params: item}} currDS={{ds:this.state.currDS}}/>
         )
     },
     getRequestParams:function(){
@@ -174,8 +200,8 @@ var Interface = React.createClass({
             url: '/',
             data: {action: 'run_query', query: data},
             success: function (data) {
-                console.log(data);
                 if(data.rows.length){
+                    this.setState({error:null});
                     this.drawTable(data);
                 }else{
                     this.setState({error:'Data not found!'});
@@ -218,10 +244,6 @@ var Interface = React.createClass({
                 link.click();
             }.bind(this)
         })
-    },
-
-    componentDidUpdate: function () {
-        $('.datetime').mask('0000-00-00 00:00:00', {placeholder: "____-__ __:__:__"});
     },
     drawTable: function (data) {
         var table = null;

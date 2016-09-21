@@ -3,17 +3,17 @@
   "ID_Report": "1",
   "DataStore": "1",
   "ParametersList": [
-{
+    {
       "id": "1",
       "name": "Дата начала",
       "type": "timestamp"
     },
-{
+    {
       "id": "2",
       "name": "Дата конца",
       "type": "timestamp"
     },
-{
+    {
       "id": "3",
       "name": "Limit",
       "type": "int"
@@ -25,5 +25,5 @@
       "query": "U0VMRUNUIHNfaXAgRlJPTSBpaXNsb2dpIGdyb3VwIGJ5IHNfaXA7"
     }
   ],
-  "SQL_Query": "U1FMX1F1ZXJ5IjogIlNFTEVDVCAqIEZST00gaWlzbG9naSB3aGVyZSAgXCJ0aW1lc3RhbXBcIiBCRVRXRUVOICQxIGFuZCAkMiAgYW5kIHNfaXAgPSAkNCBsaW1pdCAkMzs="
+  "SQL_Query": "U0VMRUNUICogRlJPTSBpaXNsb2dpIHdoZXJlICAidGltZXN0YW1wIiBCRVRXRUVOICQxIGFuZCAkMiAgYW5kIHNfaXAgPSAkNCBsaW1pdCAkMzs="
 }
