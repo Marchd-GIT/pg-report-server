@@ -4,7 +4,7 @@
 POST
 Получение списка датасетов без sql запросов
 action=get_datasets
-Выполнение основного запроса
+Выполнение основного запроса:
 action=run_query
 query=
 {
@@ -16,6 +16,20 @@ query=
 		
 	]
 }
+Ответ:
+{
+	"status" : "0",
+	body : {
+		"fields" : ["timestamp"],
+		"rows" : [["2015-11-23 07:35:47"]]
+	}
+}
+Статусы
+"0" - Данные
+"1" - Ожидание
+"2" - Нет данных
+"3" - Ошибка запроса
+
 Выполнения запроса для заполнения select-а
 action=get_select_row
 query=
@@ -23,6 +37,8 @@ query=
 	"DataSet" : "1",
 	"ID_Params" : "4"
 }
+
+
 Подучить готовый отчет по id
 action=get_result
 id=D26D0990-89A1-65C4-2BF3-1A96CF68DB4E
@@ -72,4 +88,3 @@ switch ($action) {
 //get_datasets();
 //json_params_get("test.json");
 //query_run($connection_string, $args_array, $query_string);
-?>
