@@ -1,2 +1,2 @@
 # pg-report-server
-Report server for Postgres
+This is simple postgres report server. Now in development.
