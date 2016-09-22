@@ -1,12 +1,83 @@
-// var DataTable = React.createClass({
-//   render: function() {
-//     return (
-//
-//     );
-//   }
-// });
+var DataTable = React.createClass({
+  prepareTable:function(data){
+      console.log(data);
+      var header = null;
+      var body = null;
+      if (data && data.fields) {
+          header = data.fields.map(function (item, index) {
+              return (
+                  <th>{item}</th>
+              )
+          });
+          body = data.rows.map(function (row, index) {
+              return (
+                  <tr>
+                      {
+                          (function () {
+                              var items = row.map(function (item, index) {
+                                  return (
+                                      <td>{item}</td>
+                                  )
+                              });
+                              return items;
+                          })()
+                      }
+                  </tr>
+              )
+          });
+          console.log(body);
+      }
+      var table = <table>
+          <tr>{header}</tr>
+          {body}</table>;
+      return table;
+  },
 
-var Query = React.createClass({
+  render: function() {
+    return (
+        <div>
+            {this.prepareTable(this.props.data.tableData)}
+        </div>
+    );
+  }
+});
+var TextInput = React.createClass({
+    render: function(){
+        return (
+            <div>
+                <p>{this.props.data.item.name}</p>
+                <input id={this.props.data.item.id} type="text"/>
+            </div>
+        );
+    }
+});
+
+var IntInput = React.createClass({
+    render: function(){
+        return (
+            <div>
+                <p>{this.props.data.item.name}</p>
+                <input id={this.props.data.item.id} type="text"/>
+            </div>
+        );
+    }
+});
+
+var DateTimeInput = React.createClass({
+    componentDidMount: function () {
+        $('#' + this.props.data.item.id).mask('0000-00-00 00:00:00', {placeholder: "____-__ __:__:__"});
+    },
+    render: function(){
+        return (
+            <div>
+                <p>{this.props.data.item.name}</p>
+                <input className="datetime" id={this.props.data.item.id} type="text"/>
+            </div>
+        );
+    }
+});
+
+var QuerySelect = React.createClass({
     getInitialState: function(){
       return {
           options: null
@@ -54,7 +125,7 @@ var Interface = React.createClass({
             dataSets: null,
             currDS: 'default',
             state: null,
-            table: null,
+            tableData: null,
             status: null,
             error: null
         }
@@ -89,31 +160,22 @@ var Interface = React.createClass({
     },
     drawText: function(item){
         return (
-            <div>
-                <p>{item.name}</p>
-                <input id={item.id} type="text"/>
-            </div>
+            <TextInput data={{item:item}}/>
         );
     },
     drawInt: function(item){
         return (
-            <div>
-                <p>{item.name}</p>
-                <input id={item.id} type="text"/>
-            </div>
+            <IntInput data={{item:item}}/>
         );
     },
     drawDateTime: function(item){
         return (
-            <div>
-                <p>{item.name}</p>
-                <input className="datetime" id={item.id} type="text"/>
-            </div>
+           <DateTimeInput data={{item:item}}/>
         );
     },
     drawSelect: function(item){
         return(
-            <Query item={{params: item}} currDS={{ds:this.state.currDS}}/>
+            <QuerySelect item={{params: item}} currDS={{ds:this.state.currDS}}/>
         )
     },
     getRequestParams:function(){
@@ -174,9 +236,9 @@ var Interface = React.createClass({
             url: '/',
             data: {action: 'run_query', query: data},
             success: function (data) {
-                console.log(data);
                 if(data.rows.length){
-                    this.drawTable(data);
+                    this.setState({error:null});
+                    this.setState({tableData:data});
                 }else{
                     this.setState({error:'Data not found!'});
                 }
@@ -219,44 +281,10 @@ var Interface = React.createClass({
             }.bind(this)
         })
     },
+    drawTable: function () {
+        return <DataTable data={{tableData:this.state.tableData}} />
+    },
 
-    componentDidUpdate: function () {
-        $('.datetime').mask('0000-00-00 00:00:00', {placeholder: "____-__ __:__:__"});
-    },
-    drawTable: function (data) {
-        var table = null;
-        var header = null;
-        var body = null;
-        if (data.fields) {
-            header = data.fields.map(function (item, index) {
-                return (
-                    <th>{item}</th>
-                )
-            });
-            body = data.rows.map(function (row, index) {
-                return (
-                    <tr>
-                        {
-                            (function () {
-                                var items = row.map(function (item, index) {
-                                    return (
-                                        <td>{item}</td>
-                                    )
-                                });
-                                return items;
-                            })()
-                        }
-                    </tr>
-                )
-            });
-            console.log(body);
-        }
-        table = <table>
-            <tr>{header}</tr>
-            {body}</table>;
-        this.setState({table: table});
-        console.log(header);
-    },
     render: function () {
 
         return (
@@ -291,7 +319,7 @@ var Interface = React.createClass({
                     </div>
                 </div>
                 <div className="dataTable">
-                    {this.state.status == 'loading' ? 'loading...' : this.state.error ? this.state.error : this.state.table}
+                    {this.state.status == 'loading' ? 'loading...' : this.state.error ? this.state.error : this.drawTable()}
                 </div>
             </div>
         );
