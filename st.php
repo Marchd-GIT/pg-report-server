@@ -186,6 +186,7 @@ function query_run($connection_string, $args_array, $query_string, $format)
     if (!pg_connection_busy($dbconn)) {
         pg_send_query($dbconn, $query);
     }
+
     $counter = 0;
     while (pg_connection_busy($dbconn)) {
         sleep(1);
