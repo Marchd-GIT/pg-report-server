@@ -28,7 +28,7 @@ if (!pg_connection_busy($dbconn)) {
     pg_send_query($dbconn, $query);
 }
 
-query_slow($dbconn, $format, $guid);
+query_slow($dbconn,$guid);
 
 }
 

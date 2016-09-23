@@ -79,6 +79,8 @@ function rm_result_by_id()
 
 function get_result_by_id()
 {
+    header('Content-Type: application/json');
+
     $id = isset($_POST['id']) ? $_POST['id'] : '';
 
     $query = "SELECT * FROM query_result WHERE id = '" . "$id" . "' limit 1;";
@@ -89,16 +91,21 @@ function get_result_by_id()
         while ($row = $result->fetchArray()) {
             $res = $row['result'];
         }
-        return $res;
+        if ($res != ''){
+            echo $res;
+        }
+        else{
+            echo "{\"status\" : \"2\"}";
+        }
     } else {
-        echo "result not found";
+        echo "{\"status\" : \"3\"}";
     }
 }
 
 function set_new_result($guid, $result)
 {
     if ($result == '' && $guid != '') {
-        $query = "INSERT INTO query_result (id,result) VALUES ('" . $guid . "','Query in process');";
+        $query = "INSERT INTO query_result (id,result) VALUES ('" . $guid . "','{\"status\" : \"1\"}');";
         sqlite_query_change($query);
     } elseif ($result != '' && $guid != '') {
         $query = "UPDATE query_result set result='" . $result . "' where id= '" . $guid . "'";
@@ -120,7 +127,7 @@ function get_select_row()
         }
         $empty = [];
         if ($sql_query != '')
-            query_run(get_connection_string($datasets[$json_params->DataSet]->DataStore), $empty, $sql_query, "json");
+            query_run(get_connection_string($datasets[$json_params->DataSet]->DataStore), $empty, $sql_query, "json",'');
     } else
         echo "Bed query!";
 }
@@ -188,9 +195,9 @@ function query_prepare($query, $args_array){
     return $query;
 }
 
-function query_run($connection_string, $args_array, $query_string, $format)
+function query_run($connection_string, $args_array, $query_string, $format,$name)
 {
-    global $tlc, $url, $slow;
+    global $slow;
     $dbconn = pg_pconnect($connection_string);
 
     if (!$dbconn) {
@@ -209,17 +216,10 @@ function query_run($connection_string, $args_array, $query_string, $format)
         sleep(1);
         if ($counter == $slow) {
             $guid = getGUID();
-            $queries_from_cookie = isset($_COOKIE['QUERIES']) ? $_COOKIE['QUERIES'] : '';
-            if ($queries_from_cookie != '') {
-                $cookie_array = json_decode($queries_from_cookie);
-                array_push($cookie_array, $guid);
-            } else {
-                $cookie_array[0] = $guid;
-            }
-            setcookie("QUERIES", json_encode($cookie_array), time() + $tlc, '/', '.' . $url);
-            echo '{"fields":["Yor","query"],"rows":[["is very","long"]]}';
+            return_cookie($guid,$name,$args_array);
+            header('Content-Type: application/json');
+            echo '{"status" : "1"}';
             set_new_result($guid, '');
-
             $arr_send = json_encode($args_array);
             exec("php ./large_query.php '" . "$connection_string" . "' '" . "$arr_send" . "' '" . "$query_string" . "' '" . "$format" . "' '" . "$guid" . "' 2>&1", $a);
             foreach ($a as $b) {
@@ -236,6 +236,125 @@ function query_run($connection_string, $args_array, $query_string, $format)
 
 }
 
+function return_cookie($guid,$name,$args_array){
+    global $tlc,$url;
+    $report = [
+        "id" => $guid,
+        "name"         => $name,
+        "creation_date"  => date("Y-m-d H:i:s"),
+        "arguments" => $args_array
+    ];
+
+    $queries_from_cookie = isset($_COOKIE['QUERIES']) ? $_COOKIE['QUERIES'] : '';
+    if ($queries_from_cookie != '') {
+        $cookie_array = json_decode($queries_from_cookie);
+        array_push($cookie_array, $report);
+    } else {
+        $cookie_array[0] = $report;
+    }
+    setcookie("QUERIES", json_encode($cookie_array), time() + $tlc, '/', '.' . $url);
+}
+
+function result_to_json($result){
+    header('Content-Type: application/json');
+
+    $json_result = (object)[
+        "status" => '',
+        "body" => (object)[
+            "fields" => [],
+            "rows"   => []
+        ]
+    ];
+    $i = 0;
+    while ($i < pg_num_fields($result)) {
+        $fieldName = pg_field_name($result, $i);
+        array_push($json_result->body->fields, $fieldName);
+        $i = $i + 1;
+    }
+    $k = 0;
+    while ($row = pg_fetch_row($result)) {
+        array_push($json_result->body->rows, $row);
+        $k = $k + 1;
+    }
+    if ($k > 0 ){
+        $json_result->status = "0";
+    }
+    else{
+        $json_result->status = "2";
+    }
+    return $json_result;
+}
+
+function result_to_xls($result){
+    header('Content-Type: text/html; charset=utf-8');
+    header('P3P: CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
+    header('Cache-Control: no-store, no-cache, must-revalidate');
+    header('Cache-Control: post-check=0, pre-check=0', FALSE);
+    header('Pragma: no-cache');
+    header('Content-transfer-encoding: binary');
+    header('Content-Disposition: attachment;');
+    header('Content-Type: application/x-unknown');
+    $i = 0;
+    echo '<html><body><table height=auto width=auto border=\'1\' rules=\'rows\' ><tr>';
+    while ($i < pg_num_fields($result)) {
+        $fieldName = pg_field_name($result, $i);
+        echo '<th bgcolor=\'#16a085\'>' . $fieldName . '</th>';
+        $i = $i + 1;
+    }
+    echo '</tr>';
+    $i = 0;
+
+    while ($row = pg_fetch_row($result)) {
+        echo '<tr>';
+        $count = count($row);
+        $y = 0;
+        while ($y < $count) {
+            $c_row = current($row);
+            echo '<td>' . $c_row . '</td>';
+            next($row);
+            $y = $y + 1;
+        }
+        echo '</tr>';
+        $i = $i + 1;
+    }
+}
+
+function result_to_csv($result){
+    header('Content-Type: text/html; charset=utf-8');
+    header('P3P: CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
+    header('Cache-Control: no-store, no-cache, must-revalidate');
+    header('Cache-Control: post-check=0, pre-check=0', FALSE);
+    header('Pragma: no-cache');
+    header('Content-transfer-encoding: binary');
+    header('Content-Disposition: attachment;');
+    header('Content-Type: application/x-unknown');
+    $i = 0;
+    while ($i < pg_num_fields($result)) {
+        if ($i > 0)
+            echo "\t";
+        $fieldName = pg_field_name($result, $i);
+        echo $fieldName;
+        $i = $i + 1;
+    }
+    echo "\n";
+    $i = 0;
+
+    while ($row = pg_fetch_row($result)) {
+        $count = count($row);
+        $y = 0;
+        while ($y < $count) {
+            if ($y > 0)
+                echo "\t";
+            $c_row = current($row);
+            echo $c_row;
+            next($row);
+            $y = $y + 1;
+        }
+        echo "\n";
+        $i = $i + 1;
+    }
+}
+
 function query_fast($dbconn, $format){
 
     $result = pg_get_result($dbconn);
@@ -246,191 +365,32 @@ function query_fast($dbconn, $format){
     }
 
     if ($format == "json") {
-        header('Content-Type: application/json');
-
-        $json_result = new stdClass();
-        $json_result->fields = [];
-        $json_result->rows = [];
-        $i = 0;
-        while ($i < pg_num_fields($result)) {
-            $fieldName = pg_field_name($result, $i);
-            array_push($json_result->fields, $fieldName);
-            $i = $i + 1;
-        }
-        while ($row = pg_fetch_row($result))
-            array_push($json_result->rows, $row);
-
-        echo json_encode($json_result, JSON_UNESCAPED_UNICODE);
-    } elseif ($format == "xls") {
-        header('Content-Type: text/html; charset=utf-8');
-        header('P3P: CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
-        header('Cache-Control: no-store, no-cache, must-revalidate');
-        header('Cache-Control: post-check=0, pre-check=0', FALSE);
-        header('Pragma: no-cache');
-        header('Content-transfer-encoding: binary');
-        header('Content-Disposition: attachment;');
-        header('Content-Type: application/x-unknown');
-        $i = 0;
-        echo '<html><body><table height=auto width=auto border=\'1\' rules=\'rows\' ><tr>';
-        while ($i < pg_num_fields($result)) {
-            $fieldName = pg_field_name($result, $i);
-            echo '<th bgcolor=\'#16a085\'>' . $fieldName . '</th>';
-            $i = $i + 1;
-        }
-        echo '</tr>';
-        $i = 0;
-
-        while ($row = pg_fetch_row($result)) {
-            echo '<tr>';
-            $count = count($row);
-            $y = 0;
-            while ($y < $count) {
-                $c_row = current($row);
-                echo '<td>' . $c_row . '</td>';
-                next($row);
-                $y = $y + 1;
-            }
-            echo '</tr>';
-            $i = $i + 1;
-        }
-
-    } elseif ($format == "csv") {
-        header('Content-Type: text/html; charset=utf-8');
-        header('P3P: CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
-        header('Cache-Control: no-store, no-cache, must-revalidate');
-        header('Cache-Control: post-check=0, pre-check=0', FALSE);
-        header('Pragma: no-cache');
-        header('Content-transfer-encoding: binary');
-        header('Content-Disposition: attachment;');
-        header('Content-Type: application/x-unknown');
-        $i = 0;
-        while ($i < pg_num_fields($result)) {
-            if ($i > 0)
-                echo "\t";
-            $fieldName = pg_field_name($result, $i);
-            echo $fieldName;
-            $i = $i + 1;
-        }
-        echo "\n";
-        $i = 0;
-
-        while ($row = pg_fetch_row($result)) {
-            $count = count($row);
-            $y = 0;
-            while ($y < $count) {
-                if ($y > 0)
-                    echo "\t";
-                $c_row = current($row);
-                echo $c_row;
-                next($row);
-                $y = $y + 1;
-            }
-            echo "\n";
-            $i = $i + 1;
-        }
+         echo json_encode(result_to_json($result), JSON_UNESCAPED_UNICODE);
+    }
+    elseif ($format == "xls") {
+        result_to_xls($result);
 
     }
-    pg_flush($dbconn);
+    elseif ($format == "csv") {
+        result_to_csv($result);
+    }
+
     pg_free_result($result);
+    pg_flush($dbconn);
     pg_close($dbconn);
 }
 
-function query_slow($dbconn, $format, $guid)
-{
+function query_slow($dbconn,$guid){
+
     $result = pg_get_result($dbconn);
 
     if (!$result) {
         echo "An error occured.\n";
         exit;
     }
+    $final = json_encode(result_to_json($result));
+    set_new_result($guid, $final);
 
-
-    if ($format == "json") {
-        header('Content-Type: application/json');
-
-        $json_result = new stdClass();
-        $json_result->fields = [];
-        $json_result->rows = [];
-        $i = 0;
-        while ($i < pg_num_fields($result)) {
-            $fieldName = pg_field_name($result, $i);
-            array_push($json_result->fields, $fieldName);
-            $i = $i + 1;
-        }
-        while ($row = pg_fetch_row($result))
-            array_push($json_result->rows, $row);
-
-        $final = json_encode($json_result, JSON_UNESCAPED_UNICODE);
-        set_new_result($guid, $final);
-    } elseif ($format == "xls") {
-        header('Content-Type: text/html; charset=utf-8');
-        header('P3P: CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
-        header('Cache-Control: no-store, no-cache, must-revalidate');
-        header('Cache-Control: post-check=0, pre-check=0', FALSE);
-        header('Pragma: no-cache');
-        header('Content-transfer-encoding: binary');
-        header('Content-Disposition: attachment;');
-        header('Content-Type: application/x-unknown');
-        $i = 0;
-        echo '<html><body><table height=auto width=auto border=\'1\' rules=\'rows\' ><tr>';
-        while ($i < pg_num_fields($result)) {
-            $fieldName = pg_field_name($result, $i);
-            echo '<th bgcolor=\'#16a085\'>' . $fieldName . '</th>';
-            $i = $i + 1;
-        }
-        echo '</tr>';
-        $i = 0;
-
-        while ($row = pg_fetch_row($result)) {
-            echo '<tr>';
-            $count = count($row);
-            $y = 0;
-            while ($y < $count) {
-                $c_row = current($row);
-                echo '<td>' . $c_row . '</td>';
-                next($row);
-                $y = $y + 1;
-            }
-            echo '</tr>';
-            $i = $i + 1;
-        }
-
-    } elseif ($format == "csv") {
-        header('Content-Type: text/html; charset=utf-8');
-        header('P3P: CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
-        header('Cache-Control: no-store, no-cache, must-revalidate');
-        header('Cache-Control: post-check=0, pre-check=0', FALSE);
-        header('Pragma: no-cache');
-        header('Content-transfer-encoding: binary');
-        header('Content-Disposition: attachment;');
-        header('Content-Type: application/x-unknown');
-        $i = 0;
-        while ($i < pg_num_fields($result)) {
-            if ($i > 0)
-                echo "\t";
-            $fieldName = pg_field_name($result, $i);
-            echo $fieldName;
-            $i = $i + 1;
-        }
-        echo "\n";
-        $i = 0;
-
-        while ($row = pg_fetch_row($result)) {
-            $count = count($row);
-            $y = 0;
-            while ($y < $count) {
-                if ($y > 0)
-                    echo "\t";
-                $c_row = current($row);
-                echo $c_row;
-                next($row);
-                $y = $y + 1;
-            }
-            echo "\n";
-            $i = $i + 1;
-        }
-
-    }
     pg_free_result($result);
     pg_close($dbconn);
 }
@@ -454,7 +414,7 @@ function json_query_run($format)
         //echo get_connection_string($cur_dataset->DataStore);
         //var_dump($json_params->args);
         //echo $cur_dataset->SQL_Query."!!!!";
-        query_run(get_connection_string($cur_dataset->DataStore), $json_params->args, $cur_dataset->SQL_Query, $format);
+        query_run(get_connection_string($cur_dataset->DataStore), $json_params->args, $cur_dataset->SQL_Query, $format,$cur_dataset->NameReport);
 
     } else {
         echo "Bad query!";

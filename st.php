@@ -67,13 +67,10 @@ switch ($action) {
         get_select_row();
         break;
     case "get_result":
-        echo  get_result_by_id();
+        get_result_by_id();
         break;
     case "rm_result":
-        echo  rm_result_by_id();
-        break;
-    case "!get_result":
-        echo  get_result_by_id();
+        rm_result_by_id();
         break;
     case "sqlite1":
         $guid = getGUID();
