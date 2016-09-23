@@ -50,11 +50,10 @@ EOF;
         $result = $db->query($sql);
     }
 
-    if($db->changes() == 0){
+    if ($db->changes() == 0) {
         return $db->changes();
         $db->close();
-    }
-    else{
+    } else {
         return $result;
         $db->close();
     }
@@ -70,9 +69,9 @@ function rm_result_by_id()
     $result = sqlite_query_change($query);
 
     if ($result) {
-        echo "result deleted successfully";
+        echo "{\"status\" : \"0\"}";
     } else {
-        echo "result deleted fail";
+        echo "{\"status\" : \"2\"}";
     }
 
 }
@@ -91,10 +90,9 @@ function get_result_by_id()
         while ($row = $result->fetchArray()) {
             $res = $row['result'];
         }
-        if ($res != ''){
+        if ($res != '') {
             echo $res;
-        }
-        else{
+        } else {
             echo "{\"status\" : \"2\"}";
         }
     } else {
@@ -127,7 +125,7 @@ function get_select_row()
         }
         $empty = [];
         if ($sql_query != '')
-            query_run(get_connection_string($datasets[$json_params->DataSet]->DataStore), $empty, $sql_query, "json",'');
+            query_run(get_connection_string($datasets[$json_params->DataSet]->DataStore), $empty, $sql_query, "json", '');
     } else
         echo "Bed query!";
 }
@@ -182,7 +180,8 @@ function json_params_get($dataset_file, $type)
     return ($json);
 }
 
-function query_prepare($query, $args_array){
+function query_prepare($query, $args_array)
+{
 
     $counter = 0;
     if ($args_array != []) {
@@ -195,7 +194,7 @@ function query_prepare($query, $args_array){
     return $query;
 }
 
-function query_run($connection_string, $args_array, $query_string, $format,$name)
+function query_run($connection_string, $args_array, $query_string, $format, $name)
 {
     global $slow;
     $dbconn = pg_pconnect($connection_string);
@@ -216,7 +215,7 @@ function query_run($connection_string, $args_array, $query_string, $format,$name
         sleep(1);
         if ($counter == $slow) {
             $guid = getGUID();
-            return_cookie($guid,$name,$args_array);
+            return_cookie($guid, $name, $args_array);
             header('Content-Type: application/json');
             echo '{"status" : "1"}';
             set_new_result($guid, '');
@@ -236,12 +235,13 @@ function query_run($connection_string, $args_array, $query_string, $format,$name
 
 }
 
-function return_cookie($guid,$name,$args_array){
-    global $tlc,$url;
+function return_cookie($guid, $name, $args_array)
+{
+    global $tlc, $url;
     $report = [
         "id" => $guid,
-        "name"         => $name,
-        "creation_date"  => date("Y-m-d H:i:s"),
+        "name" => $name,
+        "creation_date" => date("Y-m-d H:i:s"),
         "arguments" => $args_array
     ];
 
@@ -255,14 +255,16 @@ function return_cookie($guid,$name,$args_array){
     setcookie("QUERIES", json_encode($cookie_array), time() + $tlc, '/', '.' . $url);
 }
 
-function result_to_json($result){
+function result_to_json($result)
+{
+
     header('Content-Type: application/json');
 
     $json_result = (object)[
         "status" => '',
         "body" => (object)[
             "fields" => [],
-            "rows"   => []
+            "rows" => []
         ]
     ];
     $i = 0;
@@ -276,16 +278,17 @@ function result_to_json($result){
         array_push($json_result->body->rows, $row);
         $k = $k + 1;
     }
-    if ($k > 0 ){
+    if ($k > 0) {
         $json_result->status = "0";
-    }
-    else{
+    } else {
         $json_result->status = "2";
     }
     return $json_result;
 }
 
-function result_to_xls($result){
+function result_to_xls($result)
+{
+
     header('Content-Type: text/html; charset=utf-8');
     header('P3P: CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
     header('Cache-Control: no-store, no-cache, must-revalidate');
@@ -319,7 +322,9 @@ function result_to_xls($result){
     }
 }
 
-function result_to_csv($result){
+function result_to_csv($result)
+{
+
     header('Content-Type: text/html; charset=utf-8');
     header('P3P: CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
     header('Cache-Control: no-store, no-cache, must-revalidate');
@@ -355,7 +360,8 @@ function result_to_csv($result){
     }
 }
 
-function query_fast($dbconn, $format){
+function query_fast($dbconn, $format)
+{
 
     $result = pg_get_result($dbconn);
 
@@ -365,13 +371,11 @@ function query_fast($dbconn, $format){
     }
 
     if ($format == "json") {
-         echo json_encode(result_to_json($result), JSON_UNESCAPED_UNICODE);
-    }
-    elseif ($format == "xls") {
+        echo json_encode(result_to_json($result), JSON_UNESCAPED_UNICODE);
+    } elseif ($format == "xls") {
         result_to_xls($result);
 
-    }
-    elseif ($format == "csv") {
+    } elseif ($format == "csv") {
         result_to_csv($result);
     }
 
@@ -380,7 +384,8 @@ function query_fast($dbconn, $format){
     pg_close($dbconn);
 }
 
-function query_slow($dbconn,$guid){
+function query_slow($dbconn, $guid)
+{
 
     $result = pg_get_result($dbconn);
 
@@ -397,6 +402,7 @@ function query_slow($dbconn,$guid){
 
 function json_query_run($format)
 {
+
     $query = isset($_POST['query']) ? $_POST['query'] : '';
     if ($query !== '') {
         $json_params = json_decode($query);
@@ -414,7 +420,7 @@ function json_query_run($format)
         //echo get_connection_string($cur_dataset->DataStore);
         //var_dump($json_params->args);
         //echo $cur_dataset->SQL_Query."!!!!";
-        query_run(get_connection_string($cur_dataset->DataStore), $json_params->args, $cur_dataset->SQL_Query, $format,$cur_dataset->NameReport);
+        query_run(get_connection_string($cur_dataset->DataStore), $json_params->args, $cur_dataset->SQL_Query, $format, $cur_dataset->NameReport);
 
     } else {
         echo "Bad query!";

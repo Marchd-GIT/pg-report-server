@@ -1,5 +1,5 @@
 <?php
-/*
+/*/*
 Запросы:
 POST
 Получение списка датасетов без sql запросов
@@ -72,11 +72,6 @@ switch ($action) {
     case "rm_result":
         rm_result_by_id();
         break;
-    case "sqlite1":
-        $guid = getGUID();
-        echo $guid."\n";
-        set_new_result($guid,'');
-        break;
     default:
         echo "Bad parameters!";
 }
@@ -84,4 +79,4 @@ switch ($action) {
 //get_connection_string("1");
 //get_datasets();
 //json_params_get("test.json");
-//query_run($connection_string, $args_array, $query_string);
+//query_run($connection_string, $args_array, $query_string);*/
