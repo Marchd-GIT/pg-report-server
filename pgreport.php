@@ -52,10 +52,8 @@ EOF;
 
     if ($db->changes() == 0) {
         return $db->changes();
-        $db->close();
     } else {
         return $result;
-        $db->close();
     }
 
 }
@@ -78,8 +76,7 @@ function rm_result_by_id()
 
 function get_result_by_id()
 {
-    header('Content-Type: application/json');
-
+    $format = isset($_POST['format']) ? $_POST['format'] : '';
     $id = isset($_POST['id']) ? $_POST['id'] : '';
 
     $query = "SELECT * FROM query_result WHERE id = '" . "$id" . "' limit 1;";
@@ -91,7 +88,21 @@ function get_result_by_id()
             $res = $row['result'];
         }
         if ($res != '') {
-            echo $res;
+            switch ($format){
+                case "json":
+                    header('Content-Type: application/json');
+                    echo $res;
+                    break;
+                case "xls":
+                    json_to_xls($res);
+                    break;
+                case "csv":
+                    json_to_csv($res);
+                    break;
+                default:
+                    echo "{\"status\" : \"2\"}";
+                    break;
+            }
         } else {
             echo "{\"status\" : \"2\"}";
         }
@@ -258,7 +269,7 @@ function return_cookie($guid, $name, $args_array)
 function result_to_json($result)
 {
 
-    header('Content-Type: application/json');
+
 
     $json_result = (object)[
         "status" => '',
@@ -286,7 +297,7 @@ function result_to_json($result)
     return $json_result;
 }
 
-function result_to_xls($result)
+function json_to_xls($result_json)
 {
 
     header('Content-Type: text/html; charset=utf-8');
@@ -297,32 +308,26 @@ function result_to_xls($result)
     header('Content-transfer-encoding: binary');
     header('Content-Disposition: attachment;');
     header('Content-Type: application/x-unknown');
-    $i = 0;
-    echo '<html><body><table height=auto width=auto border=\'1\' rules=\'rows\' ><tr>';
-    while ($i < pg_num_fields($result)) {
-        $fieldName = pg_field_name($result, $i);
-        echo '<th bgcolor=\'#16a085\'>' . $fieldName . '</th>';
-        $i = $i + 1;
-    }
-    echo '</tr>';
-    $i = 0;
+    //header('Content-Disposition: attachment; filename='..'xls');
 
-    while ($row = pg_fetch_row($result)) {
-        echo '<tr>';
-        $count = count($row);
-        $y = 0;
-        while ($y < $count) {
-            $c_row = current($row);
-            echo '<td>' . $c_row . '</td>';
-            next($row);
-            $y = $y + 1;
+    $result=json_decode($result_json);
+    echo '<html><body><table height=auto width=auto border=\'1\' rules=\'rows\' ><tr>';
+
+    foreach ($result->body->fields as $fieldName) {
+        echo '<th bgcolor=\'#16a085\'>' . $fieldName . '</th>';
+    }
+    echo "</tr>";
+    foreach ($result->body->rows as $row) {
+        echo "<tr>";
+        foreach ($row as $item) {
+            echo "<td>" . $item . "</td>";
         }
-        echo '</tr>';
-        $i = $i + 1;
+        echo "</tr>";
+
     }
 }
 
-function result_to_csv($result)
+function json_to_csv($result_json)
 {
 
     header('Content-Type: text/html; charset=utf-8');
@@ -333,30 +338,18 @@ function result_to_csv($result)
     header('Content-transfer-encoding: binary');
     header('Content-Disposition: attachment;');
     header('Content-Type: application/x-unknown');
-    $i = 0;
-    while ($i < pg_num_fields($result)) {
-        if ($i > 0)
-            echo "\t";
-        $fieldName = pg_field_name($result, $i);
-        echo $fieldName;
-        $i = $i + 1;
+
+    $result=json_decode($result_json);
+
+    foreach ($result->body->fields as $fieldName) {
+        echo $fieldName . "\t";
     }
     echo "\n";
-    $i = 0;
-
-    while ($row = pg_fetch_row($result)) {
-        $count = count($row);
-        $y = 0;
-        while ($y < $count) {
-            if ($y > 0)
-                echo "\t";
-            $c_row = current($row);
-            echo $c_row;
-            next($row);
-            $y = $y + 1;
+    foreach ($result->body->rows as $row) {
+        foreach ($row as $item) {
+            echo $item . "\t";
         }
         echo "\n";
-        $i = $i + 1;
     }
 }
 
@@ -371,12 +364,12 @@ function query_fast($dbconn, $format)
     }
 
     if ($format == "json") {
+        header('Content-Type: application/json');
         echo json_encode(result_to_json($result), JSON_UNESCAPED_UNICODE);
     } elseif ($format == "xls") {
-        result_to_xls($result);
-
+        json_to_xls(json_encode(result_to_json($result)));
     } elseif ($format == "csv") {
-        result_to_csv($result);
+        json_to_csv(json_encode(result_to_json($result)));
     }
 
     pg_free_result($result);
@@ -411,7 +404,7 @@ function json_query_run($format)
         $datasets = get_datasets(true);
 
 
-        $cur_dataset = new StdClass();
+        $cur_dataset = (object)[];
         foreach ($datasets as $dataset) {
             if ($dataset->ID_Report == $json_params->DataSet)
                 $cur_dataset = $dataset;
