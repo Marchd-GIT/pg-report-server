@@ -302,18 +302,20 @@ var Interface = React.createClass({
     }
   },
   dataHandler: function (data) {
+    console.log(typeof data.status);
     switch (data.status) {
-      case 0:
+      case '0':
+        console.log('good');
         this.setState({error: null});
-        this.setState({tableData: data});
+        this.setState({tableData: data.body});
         break;
-      case 1:
+      case '1':
         this.setState({error: 'Долгий запрос!'});
         break;
-      case 2:
+      case '2':
         this.setState({error: 'Data not found!'});
         break;
-      case 3:
+      case '3':
         this.setState({error: 'Error while make a db request!'});
     }
     this.setState({status: 'ready'});
@@ -328,6 +330,7 @@ var Interface = React.createClass({
       url: '/',
       data: {action: 'run_query', query: data},
       success: function (data) {
+        console.log(data);
         this.dataHandler(data);
       }.bind(this)
     })
