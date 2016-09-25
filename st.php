@@ -38,7 +38,6 @@ query=
 	"ID_Params" : "4"
 }
 
-
 Подучить готовый отчет по id
 action=get_result
 id=D26D0990-89A1-65C4-2BF3-1A96CF68DB4E
@@ -46,7 +45,6 @@ id=D26D0990-89A1-65C4-2BF3-1A96CF68DB4E
 action=rm_result
 id=D26D0990-89A1-65C4-2BF3-1A96CF68DB4E
 */
-
 require "pgreport.php";
 
 $action = isset($_POST['action']) ? $_POST['action'] : '';

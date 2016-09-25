@@ -72,6 +72,8 @@ function rm_result_by_id()
         echo "{\"status\" : \"2\"}";
     }
 
+    rm_cookie($id);
+
 }
 
 function get_result_by_id()
@@ -263,6 +265,22 @@ function return_cookie($guid, $name, $args_array)
     } else {
         $cookie_array[0] = $report;
     }
+    setcookie("QUERIES", json_encode($cookie_array), time() + $tlc, '/', '.' . $url);
+}
+
+function rm_cookie($guid)
+{
+    global $tlc, $url;
+    $i = 0;
+    $queries_from_cookie = isset($_COOKIE['QUERIES']) ? $_COOKIE['QUERIES'] : '';
+    $cookie_array = json_decode($queries_from_cookie);
+    foreach ($cookie_array as $item) {
+        if ($item->id == $guid) {
+            unset($cookie_array[$i]);
+        }
+        $i++;
+    }
+
     setcookie("QUERIES", json_encode($cookie_array), time() + $tlc, '/', '.' . $url);
 }
 
