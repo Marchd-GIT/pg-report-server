@@ -140,7 +140,7 @@ var DeferredReports = React.createClass({
     $.ajax({
       type: "POST",
       url: '/',
-      data: {action: 'get_result', id: id},
+      data: {action: 'get_result', id: id.id, format: "json"},
       success: function (data) {
         console.log(data);
       }.bind(this)
@@ -154,7 +154,7 @@ var DeferredReports = React.createClass({
     $.ajax({
       type: "POST",
       url: '/',
-      data: {action: 'rm_result', id: id},
+      data: {action: 'rm_result', id: id.id},
       success: function (data) {
         console.log(data);
       }.bind(this)
