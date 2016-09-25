@@ -148,7 +148,7 @@ var DeferredReports = React.createClass({
       success: function (data) {
         console.log(data);
         if(data.status == 0){
-          this.props.interface.interface.setState({tableData: data});
+          this.props.interface.interface.setState({tableData: data.body});
         }
         this.setState({state: 'ready'});
       }.bind(this)
@@ -382,6 +382,7 @@ var Interface = React.createClass({
     })
   },
   drawTable: function () {
+    console.log(this.state.tableData);
     return <DataTable data={{tableData: this.state.tableData}}/>
   },
 
