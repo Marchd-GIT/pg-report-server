@@ -146,11 +146,55 @@ var DeferredReports = React.createClass({
       url: '/',
       data: {action: 'get_result', id: id, format: "json"},
       success: function (data) {
-        console.log(data);
-        if(data.status == 0){
+        if(data.status == '0'){
+          this.props.interface.interface.setState({error: null});
           this.props.interface.interface.setState({tableData: data.body});
         }
         this.setState({state: 'ready'});
+      }.bind(this)
+    });
+  },
+  getDataCSV: function(e){
+    this.setState({state: 'loading'});
+    var position = e.target.name;
+    var queries = JSON.parse(this.getCookie('QUERIES'));
+    var dataRequest = queries[position];
+    var id = dataRequest.id;
+    var name = dataRequest.name;
+    console.log(Interface);
+
+    $.ajax({
+      type: "POST",
+      url: '/',
+      data: {action: 'get_result', id: id, format: "csv"},
+      success: function (data) {
+        var blob = new Blob([data]);
+        var link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = name + ".csv";
+        link.click();
+      }.bind(this)
+    });
+  },
+  getDataXLS: function(e){
+    this.setState({state: 'loading'});
+    var position = e.target.name;
+    var queries = JSON.parse(this.getCookie('QUERIES'));
+    var dataRequest = queries[position];
+    var id = dataRequest.id;
+    var name = dataRequest.name;
+    console.log(Interface);
+
+    $.ajax({
+      type: "POST",
+      url: '/',
+      data: {action: 'get_result', id: id, format: "xls"},
+      success: function (data) {
+        var blob = new Blob([data]);
+        var link = document.createElement('a');
+        link.href = window.URL.createObjectURL(blob);
+        link.download = name + ".xls";
+        link.click();
       }.bind(this)
     });
   },
@@ -184,7 +228,14 @@ var DeferredReports = React.createClass({
                 <p>Дата создания: <br/>{item.creation_date}</p>
                 <p>Статус: неизвестен</p>
                 <button name={index} onClick={self.getData}>Получить</button>
-                <button name={index} onClick={self.rmData}>Удалить</button>
+                <button name={index} onClick={self.rmData}>Удалить</button><br/>
+                <button name={index} onClick={self.getDataCSV}>
+                  CSV
+                </button>
+                <button name={index} onClick={self.getDataXLS}>
+                  XLS
+                </button>
+
               </div>
           )
         });
@@ -359,7 +410,6 @@ var Interface = React.createClass({
         var blob = new Blob([data]);
         var link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
-
         link.download = this.state.dataSets[this.state.currDS].NameReport + ".xls";
         link.click();
       }.bind(this)
@@ -382,6 +432,7 @@ var Interface = React.createClass({
     })
   },
   drawTable: function () {
+    console.log('aaa');
     console.log(this.state.tableData);
     return <DataTable data={{tableData: this.state.tableData}}/>
   },

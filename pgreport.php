@@ -280,6 +280,7 @@ function rm_cookie($guid)
         }
         $i++;
     }
+    sort($cookie_array);
 
     setcookie("QUERIES", json_encode($cookie_array), time() + $tlc, '/', '.' . $url);
 }
