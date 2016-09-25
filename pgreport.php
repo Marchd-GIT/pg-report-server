@@ -233,16 +233,16 @@ function query_run($connection_string, $args_array, $query_string, $format, $nam
             echo '{"status" : "1"}';
             set_new_result($guid, '');
             $arr_send = json_encode($args_array);
-            exec("php ./large_query.php '" . "$connection_string" . "' '" . "$arr_send" . "' '" . "$query_string" . "' '" . "$format" . "' '" . "$guid" . "' 2>&1", $a);
-            foreach ($a as $b) {
+            exec("php ./large_query.php '" . "$connection_string" . "' '" . "$arr_send" . "' '" . "$query_string" . "' '" . "$format" . "' '" . "$guid" . "' >/dev/null 2>/dev/null &");
+/*            foreach ($a as $b) {
                 echo $b . "#\n";
-            }
+            }*/
             pg_cancel_query($dbconn);
             pg_flush($dbconn);
             pg_close($dbconn);
             exit;
         }
-        $counter = $counter + 1;
+        $counter++;
     }
     query_fast($dbconn, $format);
 
