@@ -4,6 +4,7 @@ require "pgreport.php";
 /*exec("echo '#####' `date` '#####'  >> ./123.test");
 foreach ($argv as $arr) {
     exec("echo " . $arr . " >> ./123.test");
+11231231
 }*/
 
 $connection_string = $argv[1];
