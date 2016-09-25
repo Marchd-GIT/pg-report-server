@@ -216,6 +216,27 @@ var DeferredReports = React.createClass({
       }.bind(this)
     });
   },
+  getStatus: function(e){
+    var position = e.target.name;
+    var queries = JSON.parse(this.getCookie('QUERIES'));
+    var dataRequest = queries[position];
+    var id = dataRequest.id;
+    console.log(Interface);
+
+    $.ajax({
+      type: "POST",
+      url: '/',
+      data: {action: 'get_result', id: id, format: "json"},
+      success: function (data) {
+        if(data.status == '0'){
+          alert('Готов!')
+        }else if(data.status == '1'){
+          alert('Обрабатывается');
+        }
+        this.setState({state: 'ready'});
+      }.bind(this)
+    });
+  },
   getDReportsInfo: function() {
     var self = this;
     if(this.getCookie('QUERIES')){
@@ -226,7 +247,7 @@ var DeferredReports = React.createClass({
               <div>
                 <p>Имя: {item.name}</p>
                 <p>Дата создания: <br/>{item.creation_date}</p>
-                <p>Статус: неизвестен</p>
+                <button name={index} onClick={self.getStatus}>Узнать статус</button><br/>
                 <button name={index} onClick={self.getData}>Получить</button>
                 <button name={index} onClick={self.rmData}>Удалить</button><br/>
                 <button name={index} onClick={self.getDataCSV}>
