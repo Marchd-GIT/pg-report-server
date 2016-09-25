@@ -149,6 +149,8 @@ var DeferredReports = React.createClass({
         if(data.status == '0'){
           this.props.interface.interface.setState({error: null});
           this.props.interface.interface.setState({tableData: data.body});
+        }else if(data.status  == '1'){
+          alert('Ваш запрос в обработке!');
         }
         this.setState({state: 'ready'});
       }.bind(this)
@@ -226,7 +228,6 @@ var DeferredReports = React.createClass({
               <div>
                 <p>Имя: {item.name}</p>
                 <p>Дата создания: <br/>{item.creation_date}</p>
-                <p>Статус: неизвестен</p>
                 <button name={index} onClick={self.getData}>Получить</button>
                 <button name={index} onClick={self.rmData}>Удалить</button><br/>
                 <button name={index} onClick={self.getDataCSV}>
@@ -432,8 +433,6 @@ var Interface = React.createClass({
     })
   },
   drawTable: function () {
-    console.log('aaa');
-    console.log(this.state.tableData);
     return <DataTable data={{tableData: this.state.tableData}}/>
   },
 
