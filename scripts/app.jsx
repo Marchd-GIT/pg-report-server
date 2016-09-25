@@ -123,6 +123,7 @@ var QuerySelect = React.createClass({
 var DeferredReports = React.createClass({
   getInitialState: function(){
     return{
+      state: 'ready',
       requests: null
     }
   },
@@ -133,30 +134,41 @@ var DeferredReports = React.createClass({
     return matches ? decodeURIComponent(matches[1]) : undefined;
   },
   getData: function(e){
+    this.setState({state: 'loading'});
     var position = e.target.name;
     var queries = JSON.parse(this.getCookie('QUERIES'));
-    var id = queries[position];
+    var dataRequest = queries[position];
+    var id = dataRequest.id;
+    console.log(Interface);
 
     $.ajax({
       type: "POST",
       url: '/',
-      data: {action: 'get_result', id: id.id, format: "json"},
+      data: {action: 'get_result', id: id, format: "json"},
       success: function (data) {
         console.log(data);
+        if(data.status == 0){
+          this.props.interface.interface.setState({tableData: data});
+        }
+        this.setState({state: 'ready'});
       }.bind(this)
     });
   },
   rmData: function(e){
+    this.setState({state: 'loading'});
     var position = e.target.name;
     var queries = JSON.parse(this.getCookie('QUERIES'));
-    var id = queries[position];
+    var dataRequest = queries[position];
+    var id = dataRequest.id;
+    console.log(id);
 
     $.ajax({
       type: "POST",
       url: '/',
-      data: {action: 'rm_result', id: id.id},
+      data: {action: 'rm_result', id: id},
       success: function (data) {
-        console.log(data);
+        this.getDReportsInfo();
+        this.setState({state: 'ready'});
       }.bind(this)
     });
   },
@@ -168,7 +180,8 @@ var DeferredReports = React.createClass({
         var DReportsList = queries.map(function(item, index){
           return(
               <div>
-                <p>Имя: тест</p>
+                <p>Имя: {item.name}</p>
+                <p>Дата создания: <br/>{item.creation_date}</p>
                 <p>Статус: неизвестен</p>
                 <button name={index} onClick={self.getData}>Получить</button>
                 <button name={index} onClick={self.rmData}>Удалить</button>
@@ -405,7 +418,7 @@ var Interface = React.createClass({
               </button>
             </div>
             <div>
-              <DeferredReports />
+              <DeferredReports interface={{interface:this}} />
             </div>
           </div>
           <div className="dataTable">
