@@ -404,7 +404,6 @@ function query_slow($dbconn, $guid)
         $result = $res;
         $res = pg_get_result($dbconn);
     }
-    $result = pg_get_result($dbconn);
 
     if (!$result) {
         echo "An error occured.\n";
