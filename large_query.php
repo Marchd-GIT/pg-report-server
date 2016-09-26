@@ -16,9 +16,6 @@ $guid = $argv[5];
 
 function query_background($connection_string, $args_array, $query_string, $format, $guid)
 {
-
-    sleep(30);
-
     $dbconn = pg_pconnect($connection_string);
 
     if (!$dbconn) {
@@ -33,7 +30,6 @@ function query_background($connection_string, $args_array, $query_string, $forma
     }
 
     query_slow($dbconn, $guid);
-
 }
 
 query_background($connection_string, $args_array, $query_string, $format, $guid);

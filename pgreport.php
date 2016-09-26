@@ -90,7 +90,7 @@ function get_result_by_id()
             $res = $row['result'];
         }
         if ($res != '') {
-            switch ($format){
+            switch ($format) {
                 case "json":
                     header('Content-Type: application/json');
                     echo $res;
@@ -234,9 +234,9 @@ function query_run($connection_string, $args_array, $query_string, $format, $nam
             set_new_result($guid, '');
             $arr_send = json_encode($args_array);
             exec("php ./large_query.php '" . "$connection_string" . "' '" . "$arr_send" . "' '" . "$query_string" . "' '" . "$format" . "' '" . "$guid" . "' >/dev/null 2>/dev/null &");
-/*            foreach ($a as $b) {
-                echo $b . "#\n";
-            }*/
+            /*            foreach ($a as $b) {
+                            echo $b . "#\n";
+                        }*/
             pg_cancel_query($dbconn);
             pg_flush($dbconn);
             pg_close($dbconn);
@@ -288,9 +288,6 @@ function rm_cookie($guid)
 
 function result_to_json($result)
 {
-
-
-
     $json_result = (object)[
         "status" => '',
         "body" => (object)[
@@ -330,7 +327,7 @@ function json_to_xls($result_json)
     header('Content-Type: application/x-unknown');
     //header('Content-Disposition: attachment; filename='..'xls');
 
-    $result=json_decode($result_json);
+    $result = json_decode($result_json);
     echo '<html><body><table height=auto width=auto border=\'1\' rules=\'rows\' ><tr>';
 
     foreach ($result->body->fields as $fieldName) {
@@ -359,7 +356,7 @@ function json_to_csv($result_json)
     header('Content-Disposition: attachment;');
     header('Content-Type: application/x-unknown');
 
-    $result=json_decode($result_json);
+    $result = json_decode($result_json);
 
     foreach ($result->body->fields as $fieldName) {
         echo $fieldName . "\t";
@@ -375,8 +372,11 @@ function json_to_csv($result_json)
 
 function query_fast($dbconn, $format)
 {
-
-    $result = pg_get_result($dbconn);
+    $res = (object)[];
+    while ($res) {
+        $result = $res;
+        $res = pg_get_result($dbconn);
+    }
 
     if (!$result) {
         echo "An error occured.\n";
@@ -399,7 +399,11 @@ function query_fast($dbconn, $format)
 
 function query_slow($dbconn, $guid)
 {
-
+    $res = (object)[];
+    while ($res) {
+        $result = $res;
+        $res = pg_get_result($dbconn);
+    }
     $result = pg_get_result($dbconn);
 
     if (!$result) {
