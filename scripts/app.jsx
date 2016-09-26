@@ -375,13 +375,13 @@ var Interface = React.createClass({
         this.setState({tableData: data.body});
         break;
       case '1':
-        this.setState({error: 'Долгий запрос!'});
+        this.setState({error: 'Долгий запрос'});
         break;
       case '2':
-        this.setState({error: 'Data not found!'});
+        this.setState({error: 'Нет данных'});
         break;
       case '3':
-        this.setState({error: 'Error while make a db request!'});
+        this.setState({error: 'Ошибка запроса'});
     }
     this.setState({status: 'ready'});
   },
