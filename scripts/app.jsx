@@ -1,6 +1,5 @@
 var DataTable = React.createClass({
   prepareTable: function (data) {
-    console.log(data);
     var header = null;
     var body = null;
     if (data && data.fields) {
@@ -25,7 +24,6 @@ var DataTable = React.createClass({
             </tr>
         )
       });
-      console.log(body);
     }
     var table = <table>
       <tr>{header}</tr>
@@ -37,10 +35,12 @@ var DataTable = React.createClass({
     return (
         <div>
           {this.prepareTable(this.props.data.tableData)}
+          {/*{'Привет!'}*/}
         </div>
     );
   }
 });
+
 var TextInput = React.createClass({
   render: function () {
     return (
@@ -88,7 +88,6 @@ var QuerySelect = React.createClass({
   },
   getQueryParams: function (id) {
     var data = JSON.stringify({'DataSet': this.props.currDS.ds, 'ID_Params': id});
-    console.log(data);
     $.ajax({
       type: "POST",
       url: '/',
@@ -105,7 +104,6 @@ var QuerySelect = React.createClass({
             <option value={item}>{item}</option>
         )
       });
-      console.log(options);
       this.setState({options: options});
     }
   },
@@ -139,20 +137,12 @@ var DeferredReports = React.createClass({
     var queries = JSON.parse(this.getCookie('QUERIES'));
     var dataRequest = queries[position];
     var id = dataRequest.id;
-    console.log(Interface);
-
     $.ajax({
       type: "POST",
       url: '/',
       data: {action: 'get_result', id: id, format: "json"},
       success: function (data) {
-        if(data.status == '0'){
-          this.props.interface.interface.setState({error: null});
-          this.props.interface.interface.setState({tableData: data.body});
-        }else if(data.status  == '1'){
-          alert('Ваш запрос в обработке!');
-        }
-        this.setState({state: 'ready'});
+          this.props.interface.interface.dataHandler(data);
       }.bind(this)
     });
   },
@@ -163,8 +153,6 @@ var DeferredReports = React.createClass({
     var dataRequest = queries[position];
     var id = dataRequest.id;
     var name = dataRequest.name;
-    console.log(Interface);
-
     $.ajax({
       type: "POST",
       url: '/',
@@ -185,7 +173,6 @@ var DeferredReports = React.createClass({
     var dataRequest = queries[position];
     var id = dataRequest.id;
     var name = dataRequest.name;
-    console.log(Interface);
 
     $.ajax({
       type: "POST",
@@ -206,7 +193,6 @@ var DeferredReports = React.createClass({
     var queries = JSON.parse(this.getCookie('QUERIES'));
     var dataRequest = queries[position];
     var id = dataRequest.id;
-    console.log(id);
 
     $.ajax({
       type: "POST",
@@ -367,12 +353,9 @@ var Interface = React.createClass({
     }
   },
   dataHandler: function (data) {
-    console.log(typeof data.status);
     switch (data.status) {
       case '0':
-        console.log('good');
-        this.setState({error: null});
-        this.setState({tableData: data.body});
+        this.setState({tableData: data.body, error: null});
         break;
       case '1':
         this.setState({error: 'Долгий запрос'});
@@ -383,19 +366,17 @@ var Interface = React.createClass({
       case '3':
         this.setState({error: 'Ошибка запроса'});
     }
-    this.setState({status: 'ready'});
+   // this.setState({status: 'ready'});
   },
   dataRequest: function () {
-    this.setState(
-        {status: 'loading'}
-    )
+    this.setState({status: 'loading'});
     var data = this.prepareData();
     $.ajax({
       type: "POST",
       url: '/',
       data: {action: 'run_query', query: data},
       success: function (data) {
-        console.log(data);
+        this.setState({status: 'ready'});
         this.dataHandler(data);
       }.bind(this)
     })
@@ -407,7 +388,6 @@ var Interface = React.createClass({
       url: '/',
       data: {action: 'run_query_xls', query: data},
       success: function (data) {
-        console.log(this.state);
         var blob = new Blob([data]);
         var link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
@@ -423,7 +403,6 @@ var Interface = React.createClass({
       url: '/',
       data: {action: 'run_query_csv', query: data},
       success: function (data) {
-        console.log(this.state);
         var blob = new Blob([data]);
         var link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
