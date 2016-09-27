@@ -141,7 +141,13 @@ var DeferredReports = React.createClass({
       url: '/',
       data: {action: 'get_result', id: id, format: "json"},
       success: function (data) {
-          this.props.interface.interface.dataHandler(data);
+        if(data.status == '0'){
+          this.props.interface.interface.setState({error: null});
+          this.props.interface.interface.setState({tableData: data.body});
+        }else if(data.status  == '1'){
+          alert('Ваш запрос в обработке!');
+        }
+        this.setState({state: 'ready'});
       }.bind(this)
     });
   },
