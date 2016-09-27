@@ -35,7 +35,6 @@ var DataTable = React.createClass({
     return (
         <div>
           {this.prepareTable(this.props.data.tableData)}
-          {/*{'Привет!'}*/}
         </div>
     );
   }
@@ -211,7 +210,7 @@ var DeferredReports = React.createClass({
       if(queries){
         var DReportsList = queries.map(function(item, index){
           return(
-              <div>
+              <div className="repUI">
                 <p>Имя: {item.name}</p>
                 <p>Дата создания: <br/>{item.creation_date}</p>
                 <button name={index} onClick={self.getData}>Получить</button>
