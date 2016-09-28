@@ -26,10 +26,10 @@ function query_background($connection_string, $args_array, $query_string, $forma
     $query = query_prepare(base64_decode("$query_string"), $args_array);
 
     if (!pg_connection_busy($dbconn)) {
-        pg_send_query($dbconn, $query);
+        $result=pg_query($dbconn, $query);
     }
 
-    query_slow($dbconn, $guid);
+    query_slow($result,$dbconn,$guid);
 }
 
 query_background($connection_string, $args_array, $query_string, $format, $guid);

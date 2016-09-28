@@ -397,13 +397,13 @@ function query_fast($dbconn, $format)
     pg_close($dbconn);
 }
 
-function query_slow($dbconn, $guid)
+function query_slow($result,$dbconn, $guid)
 {
-    $res = (object)[];
+/*    $res = (object)[];
     while ($res) {
         $result = $res;
         $res = pg_get_result($dbconn);
-    }
+    }*/
 
     if (!$result) {
         echo "An error occured.\n";
