@@ -217,8 +217,10 @@ var DeferredReports = React.createClass({
         var DReportsList = queries.map(function(item, index){
           return(
               <div className="repUI">
-                <p>Имя: {item.name}</p>
-                <p>Дата создания: <br/>{item.creation_date}</p>
+                <p>Имя: {item.name.replace('+',' ')}</p>
+                <p>Дата создания: <br/>{item.creation_date.replace('+',' ')}</p>
+                <p>Параметры запроса: <br/>{item.arguments.map(function(etim, endex) {return (<p>{etim.replace('+',' ')}</p>)})}
+                </p>
                 <button name={index} onClick={self.getData}>Получить</button>
                 <button name={index} onClick={self.rmData}>Удалить</button><br/>
                 <button name={index} onClick={self.getDataCSV}>

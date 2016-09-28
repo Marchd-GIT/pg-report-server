@@ -239,7 +239,6 @@ function query_run($connection_string, $args_array, $query_string, $format, $nam
                         }*/
             pg_cancel_query($dbconn);
             pg_flush($dbconn);
-            pg_close($dbconn);
             exit;
         }
         $counter++;

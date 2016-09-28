@@ -81,9 +81,10 @@ html, body {
 }
 
 .ui p {
-    font-size: 17px;
+    font-size: 14px;
     margin-bottom: 0px;
     color: #000000;
+    margin-top: 2px;
 }
 
 .repUI {
