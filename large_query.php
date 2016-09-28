@@ -24,12 +24,12 @@ function query_background($connection_string, $args_array, $query_string, $forma
     }
 
     $query = query_prepare(base64_decode("$query_string"), $args_array);
-
+    pg_trace('/tmp/trace.log', 'w', $dbconn);
     if (!pg_connection_busy($dbconn)) {
-        $result=pg_query($dbconn, $query);
+        pg_send_query($dbconn, $query);
     }
 
-    query_slow($result,$dbconn,$guid);
+    query_slow($dbconn,$guid);
 }
 
 query_background($connection_string, $args_array, $query_string, $format, $guid);
