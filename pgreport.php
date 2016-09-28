@@ -210,7 +210,7 @@ function query_prepare($query, $args_array)
 function query_run($connection_string, $args_array, $query_string, $format, $name)
 {
     global $slow;
-    $dbconn = pg_pconnect($connection_string);
+    $dbconn = pg_connect($connection_string);
 
     if (!$dbconn) {
         echo "An error occured connect to database.\n";

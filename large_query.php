@@ -16,7 +16,7 @@ $guid = $argv[5];
 
 function query_background($connection_string, $args_array, $query_string, $format, $guid)
 {
-    $dbconn = pg_pconnect($connection_string);
+    $dbconn = pg_connect($connection_string);
 
     if (!$dbconn) {
         echo "An error occured connect to database.\n";
