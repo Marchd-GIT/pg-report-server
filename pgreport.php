@@ -233,7 +233,7 @@ function query_run($connection_string, $args_array, $query_string, $format, $nam
             echo '{"status" : "1"}';
             set_new_result($guid, '');
             $arr_send = json_encode($args_array);
-            exec("php ./large_query.php '" . "$connection_string" . "' '" . "$arr_send" . "' '" . "$query_string" . "' '" . "$format" . "' '" . "$guid" . "' >/dev/null 2>/dev/null &");
+            exec("php ./large_query.php '" . "$connection_string" . "' '" . "$arr_send" . "' '" . "$query_string" . "' '" . "$format" . "' '" . "$guid" . "' >>/tmp/dump 2>>/tmp/dump &");
             /*            foreach ($a as $b) {
                             echo $b . "#\n";
                         }*/
@@ -396,11 +396,11 @@ function query_fast($dbconn, $format)
     pg_close($dbconn);
 }
 
-function query_slow($dbconn, $guid)
-{
+function query_slow($dbconn, $guid){
     $res = (object)[];
     while ($res) {
         $result = $res;
+        var_dump($res);
         $res = pg_get_result($dbconn);
     }
 
@@ -409,10 +409,9 @@ function query_slow($dbconn, $guid)
         exit;
     }
     $final = json_encode(result_to_json($result));
-    set_new_result($guid, $final);
 
+    set_new_result($guid, $final);
     pg_free_result($result);
-    pg_close($dbconn);
 }
 
 function json_query_run($format)
