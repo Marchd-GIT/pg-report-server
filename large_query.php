@@ -27,10 +27,7 @@ function query_background($connection_string, $args_array, $query_string, $forma
 
 
     if (!pg_connection_busy($dbconn)) {
-        pg_send_prepare($dbconn,"main",$query);
-        while (pg_get_result($dbconn));
-
-        pg_send_execute($dbconn,"main",[]);
+        pg_send_query($dbconn,$query);
     }
 
     query_slow($dbconn,$guid);

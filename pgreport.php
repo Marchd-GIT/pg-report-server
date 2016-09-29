@@ -397,10 +397,10 @@ function query_fast($dbconn, $format)
 }
 
 function query_slow($dbconn, $guid){
-    $res = (object)[];
+
+    $res= (object)[];
     while ($res) {
         $result = $res;
-        var_dump($res);
         $res = pg_get_result($dbconn);
     }
 
