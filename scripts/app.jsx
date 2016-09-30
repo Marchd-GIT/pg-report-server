@@ -76,6 +76,20 @@ var DateTimeInput = React.createClass({
   }
 });
 
+var DateInput = React.createClass({
+  componentDidMount: function () {
+    $('#' + this.props.data.item.id).mask('0000-00-00', {placeholder: "____-__-__"});
+  },
+  render: function () {
+    return (
+        <div>
+          <p>{this.props.data.item.name}</p>
+          <input className="date" id={this.props.data.item.id} type="text"/>
+        </div>
+    );
+  }
+});
+
 var QuerySelect = React.createClass({
   getInitialState: function () {
     return {
@@ -306,6 +320,11 @@ var Interface = React.createClass({
         <DateTimeInput data={{item: item}}/>
     );
   },
+  drawDate: function (item) {
+    return (
+        <DateInput data={{item: item}}/>
+    );
+  },
   drawSelect: function (item) {
     return (
         <QuerySelect item={{params: item}} currDS={{ds: this.state.currDS}}/>
@@ -326,6 +345,8 @@ var Interface = React.createClass({
       var dataField = params.map(function (item, index) {
         if (item.type == 'timestamp') {
           return self.drawDateTime(item);
+        } else if (item.type == 'date') {
+          return self.drawDate(item);
         } else if (item.type == 'int') {
           return self.drawInt(item);
         } else if (item.type == 'string') {

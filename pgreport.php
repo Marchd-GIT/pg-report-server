@@ -132,13 +132,20 @@ function get_select_row()
     if ($query !== '') {
         $json_params = json_decode($query);
         $datasets = get_datasets(true);
-        foreach ($datasets[$json_params->DataSet]->ParametersList as $val) {
+        //var_dump($datasets);
+        foreach ($datasets as $key=>$value){
+            if($value->ID_Report == $json_params->DataSet){
+                $datasetid=$key;
+            }
+        }
+        foreach ($datasets[$datasetid]->ParametersList as $val) {
             if ($val->id == $json_params->ID_Params)
                 $sql_query = $val->query;
         }
         $empty = [];
-        if ($sql_query != '')
+        if ($sql_query != ''){
             query_run(get_connection_string($datasets[$json_params->DataSet]->DataStore), $empty, $sql_query, "json", '');
+        }
     } else
         echo "Bed query!";
 }
@@ -233,7 +240,7 @@ function query_run($connection_string, $args_array, $query_string, $format, $nam
             echo '{"status" : "1"}';
             set_new_result($guid, '');
             $arr_send = json_encode($args_array);
-            exec("php ./large_query.php '" . "$connection_string" . "' '" . "$arr_send" . "' '" . "$query_string" . "' '" . "$format" . "' '" . "$guid" . "' >>/tmp/dump 2>>/tmp/dump &");
+            exec("php ./large_query.php '" . "$connection_string" . "' '" . "$arr_send" . "' '" . "$query_string" . "' '" . "$format" . "' '" . "$guid" . "' >/dev/null 2>/dev/null &");
             /*            foreach ($a as $b) {
                             echo $b . "#\n";
                         }*/
