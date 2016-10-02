@@ -1,3 +1,5 @@
+var ReactCSSTransitionGroup = React.addons.CSSTransitionGroup;
+
 var DataTable = React.createClass({
   prepareTable: function (data) {
     var header = null;
@@ -135,16 +137,13 @@ var DeferredReport = React.createClass({
   getInitialState: function () {
     return {
       state: 'ready',
-      statusQuery: 1,
-      statusQueryString: ''
+      statusQueryString: 'Выполняется'
     }
   },
   componentDidMount: function () {
     this.getStatus();
   },
-  propTypes: {
-    data: React.PropTypes.array.isRequired
-  },
+
   getCookie: function(name){
     var matches = document.cookie.match(new RegExp(
         "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
@@ -190,11 +189,9 @@ var DeferredReport = React.createClass({
         if(data.status == '0'){
           notice('Отчет '+name+' готов!','Время старта: '+date);
           this.setState({statusQueryString : "Готов"});
-          this.setState({state: 'ready'});
           clearTimeout(this.state.timeout);
         }else if(data.status  == '1'){
-          this.setState({statusQueryString : "Выполняется"});
-          this.setState({state: 'ready'});
+          //this.setState({statusQueryString : "Выполняется"});
           setTimeout(this.getStatus,1000);
         }
 
@@ -258,7 +255,7 @@ var DeferredReport = React.createClass({
       data: {action: 'rm_result', id: id},
       success: function (data) {
         this.props.data.phaser.getDReportsInfo();
-        this.props.data.phaser.setState({state: 'ready'});
+        this.props.data.phaser.setState({state: 'ready' });
       }.bind(this)
     });
   },
@@ -284,7 +281,6 @@ var DeferredReport = React.createClass({
           <button name={index} onClick={this.getDataXLS}>
             XLS
           </button>
-
         </div>
     )
   }
@@ -315,7 +311,7 @@ var DeferredReports = React.createClass({
             interface : self.props.interface.interface,
             phaser: self};
           return(
-              <DeferredReport data={value}/>
+              <DeferredReport key={item.id} data={value}/>
           )
         });
 
@@ -323,7 +319,6 @@ var DeferredReports = React.createClass({
         return DReportsList;
       }
     }
-
   },
 
   render: function () {
@@ -331,7 +326,13 @@ var DeferredReports = React.createClass({
         <div>
           <p>Отложенные запросы.</p>
           <p>{this.state.requests ? 'Запросы в ожидании:' : 'Нет запросов'}</p>
+          <ReactCSSTransitionGroup
+              transitionName="slide"
+              transitionEnterTimeout={500}
+              transitionLeaveTimeout={300}>
           {this.getDReportsInfo()}
+          </ReactCSSTransitionGroup>
+
         </div>
     );
   }

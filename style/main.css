@@ -49,19 +49,22 @@ html, body {
     border: 1px solid transparent;
     border-radius: 4px;
     white-space: nowrap;
-    -webkit-user-select: none;
-    -moz-user-select: none;
-    -ms-user-select: none;
-    -o-user-select: none;
-    user-select: none;
+    -webkit-user-select: none;  /* Chrome all / Safari all */
+    -moz-user-select: none;     /* Firefox all */
+    -ms-user-select: none;      /* IE 10+ */
+    user-select: none;          /* Likely future */
+    transition: 0.5s;
+    outline: 0;
 }
 
 .ui button:hover {
     color: #ffffff;
     background-color: #16A085;
-    transition: 0.25s;
-
+    box-shadow: 2px 2px 10px rgba(0,0,0,0.5);
+    transition: 0.5s;
+    outline: 0;
 }
+
 
 .ui input {
     padding: 0 5px;
@@ -91,7 +94,9 @@ html, body {
 . border: #0088ff;
     border: 1px dashed #00a48a;
     margin-top: 5px;
-    padding: 2px;
+    padding: 4px;
+    border-radius: 6px;
+    /*background-color: rgba(0, 164, 138, 0.9);*/
 }
 
 .dataTable {
@@ -118,4 +123,31 @@ tr {
 td {
     padding: 5px; /* Поля вокруг содержимого ячеек */
     border: 1px solid #16A085; /* Граница вокруг ячеек */
+}
+
+.slide-enter {
+    opacity: 0;
+    transform: translate(-250px,0);
+    transform: translate3d(-250px,0,0);
+}
+.slide-enter.slide-enter-active {
+    opacity: 1;
+    transform:   translate(0,0);
+    transform: translate3d(0,0,0);
+    transition-property: transform, opacity;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0.175, 0.665, 0.320, 1), linear;
+}
+.slide-leave {
+    opacity: 1;
+    transform:   translate(0,0,0);
+    transform: translate3d(0,0,0);
+    transition-property: transform, opacity;
+    transition-duration: 300ms;
+    transition-timing-function: cubic-bezier(0.175, 0.665, 0.320, 1), linear;
+}
+.slide-leave.slide-leave-active {
+    opacity: 0;
+    transform:   translate(250px,0);
+    transform: translate3d(250px,0,0);
 }
