@@ -131,12 +131,19 @@ var QuerySelect = React.createClass({
   }
 });
 
-var DeferredReports = React.createClass({
-  getInitialState: function(){
-    return{
+var DeferredReport = React.createClass({
+  getInitialState: function () {
+    return {
       state: 'ready',
-      requests: null
+      statusQuery: 1,
+      statusQueryString: ''
     }
+  },
+  componentDidMount: function () {
+    this.getStatus();
+  },
+  propTypes: {
+    data: React.PropTypes.array.isRequired
   },
   getCookie: function(name){
     var matches = document.cookie.match(new RegExp(
@@ -144,6 +151,7 @@ var DeferredReports = React.createClass({
     ));
     return matches ? decodeURIComponent(matches[1]) : undefined;
   },
+
   getData: function(e){
     this.setState({state: 'loading'});
     var position = e.target.name;
@@ -156,15 +164,40 @@ var DeferredReports = React.createClass({
       data: {action: 'get_result', id: id, format: "json"},
       success: function (data) {
         if(data.status == '0'){
-          this.props.interface.interface.setState({error: null});
-          this.props.interface.interface.setState({tableData: data.body});
+          this.props.data.interface.setState({error: null});
+          this.props.data.interface.setState({tableData: data.body});
+          this.setState({statusQueryString : "Готов"});
         }else if(data.status  == '1'){
-          alert('Ваш запрос в обработке!');
+          this.setState({statusQueryString : "Выполняется"});
         }
         this.setState({state: 'ready'});
       }.bind(this)
     });
   },
+  getStatus: function(){
+    var position = this.props.data.index;
+    var queries = JSON.parse(this.getCookie('QUERIES'));
+    var dataRequest = queries[position];
+    var id = dataRequest.id;
+    $.ajax({
+      type: "POST",
+      url: '/',
+      data: {action: 'get_result', id: id, format: "json"},
+      success: function (data) {
+        if(data.status == '0'){
+          this.setState({statusQueryString : "Готов"});
+          this.setState({state: 'ready'});
+          clearTimeout(this.state.timeout);
+        }else if(data.status  == '1'){
+          this.setState({statusQueryString : "Выполняется"});
+          this.setState({state: 'ready'});
+          setTimeout(this.getStatus,1000);
+        }
+
+      }.bind(this)
+    });
+  },
+
   getDataCSV: function(e){
     this.setState({state: 'loading'});
     var position = e.target.name;
@@ -185,6 +218,7 @@ var DeferredReports = React.createClass({
       }.bind(this)
     });
   },
+
   getDataXLS: function(e){
     this.setState({state: 'loading'});
     var position = e.target.name;
@@ -206,6 +240,7 @@ var DeferredReports = React.createClass({
       }.bind(this)
     });
   },
+
   rmData: function(e){
     this.setState({state: 'loading'});
     var position = e.target.name;
@@ -218,10 +253,51 @@ var DeferredReports = React.createClass({
       url: '/',
       data: {action: 'rm_result', id: id},
       success: function (data) {
-        this.getDReportsInfo();
-        this.setState({state: 'ready'});
+        this.props.data.phaser.getDReportsInfo();
+        this.props.data.phaser.setState({state: 'ready'});
       }.bind(this)
     });
+  },
+
+  render: function() {
+    var item = this.props.data.item;
+    var index = this.props.data.index;
+    return (
+        <div className="repUI" id={index}>
+          <p>Имя: {item.name.replace('+', ' ')}</p>
+          <p>Состояние: {this.state.statusQueryString}</p>
+          <p>Дата создания: <br/>{item.creation_date.replace('+', ' ')}</p>
+          <p>Параметры запроса: <br/>{item.arguments.map(function (etim, endex) {
+            return (<p>{etim.replace('+', ' ')}</p>)
+          })}
+          </p>
+          <button name={index} onClick={this.getData}>Получить</button>
+          <button name={index} onClick={this.rmData}>Удалить</button>
+          <br/>
+          <button name={index} onClick={this.getDataCSV}>
+            CSV
+          </button>
+          <button name={index} onClick={this.getDataXLS}>
+            XLS
+          </button>
+
+        </div>
+    )
+  }
+});
+
+var DeferredReports = React.createClass({
+  getInitialState: function(){
+    return{
+      state: 'ready',
+      requests: null
+    }
+  },
+  getCookie: function(name){
+    var matches = document.cookie.match(new RegExp(
+        "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
+    ));
+    return matches ? decodeURIComponent(matches[1]) : undefined;
   },
   getDReportsInfo: function() {
     var self = this;
@@ -229,22 +305,13 @@ var DeferredReports = React.createClass({
       var queries = JSON.parse(this.getCookie('QUERIES'));
       if(queries){
         var DReportsList = queries.map(function(item, index){
+          var value = {
+            item : item,
+            index : index,
+            interface : self.props.interface.interface,
+            phaser: self};
           return(
-              <div className="repUI">
-                <p>Имя: {item.name.replace('+',' ')}</p>
-                <p>Дата создания: <br/>{item.creation_date.replace('+',' ')}</p>
-                <p>Параметры запроса: <br/>{item.arguments.map(function(etim, endex) {return (<p>{etim.replace('+',' ')}</p>)})}
-                </p>
-                <button name={index} onClick={self.getData}>Получить</button>
-                <button name={index} onClick={self.rmData}>Удалить</button><br/>
-                <button name={index} onClick={self.getDataCSV}>
-                  CSV
-                </button>
-                <button name={index} onClick={self.getDataXLS}>
-                  XLS
-                </button>
-
-              </div>
+              <DeferredReport data={value}/>
           )
         });
 
