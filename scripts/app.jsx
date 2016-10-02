@@ -167,6 +167,7 @@ var DeferredReport = React.createClass({
           this.props.data.interface.setState({error: null});
           this.props.data.interface.setState({tableData: data.body});
           this.setState({statusQueryString : "Готов"});
+
         }else if(data.status  == '1'){
           this.setState({statusQueryString : "Выполняется"});
         }
@@ -179,12 +180,15 @@ var DeferredReport = React.createClass({
     var queries = JSON.parse(this.getCookie('QUERIES'));
     var dataRequest = queries[position];
     var id = dataRequest.id;
+    var name = dataRequest.name;
+    var date = dataRequest.creation_date;
     $.ajax({
       type: "POST",
       url: '/',
       data: {action: 'get_result', id: id, format: "json"},
       success: function (data) {
         if(data.status == '0'){
+          notice('Отчет '+name+' готов!','Время старта: '+date);
           this.setState({statusQueryString : "Готов"});
           this.setState({state: 'ready'});
           clearTimeout(this.state.timeout);
@@ -566,3 +570,38 @@ ReactDOM.render(
     <App />,
     document.getElementById('container')
 );
+
+
+var focustab=true;
+
+window.onfocus = function(){
+  focustab=true;
+};
+window.onblur = function(){
+  focustab=false;
+};
+
+Notification.requestPermission( newMessage );
+
+function newMessage(permission) {
+  if( permission != "granted" ) return false;
+  //var notify = new Notification("Привет, я оповещатель и я включен! ");
+};
+
+function notice(name,body){
+
+  if( !focustab  ){
+    var MessNotification = new Notification(
+        name, {
+          tag : name,
+          body : body,
+          icon : "",
+          iconUrl: ""
+        });
+
+    MessNotification.onclick= function(){
+      MessNotification.close();
+      return window.focus();
+    }
+  }
+}
