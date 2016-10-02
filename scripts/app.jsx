@@ -217,7 +217,7 @@ var DeferredReport = React.createClass({
         var blob = new Blob([data]);
         var link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
-        link.download = name + ".csv";
+        link.download = (name + ".csv").replace(/\+/g, ' ');
         link.click();
       }.bind(this)
     });
@@ -239,7 +239,7 @@ var DeferredReport = React.createClass({
         var blob = new Blob([data]);
         var link = document.createElement('a');
         link.href = window.URL.createObjectURL(blob);
-        link.download = name + ".xls";
+        link.download = (name + ".xls").replace(/\+/g, ' ');
         link.click();
       }.bind(this)
     });
@@ -268,7 +268,7 @@ var DeferredReport = React.createClass({
     var index = this.props.data.index;
     return (
         <div className="repUI" id={index}>
-          <p>Имя: {item.name.replace('+', ' ')}</p>
+          <p>Имя: {item.name.replace(/\+/g, ' ')}</p>
           <p>Состояние: {this.state.statusQueryString}</p>
           <p>Дата создания: <br/>{item.creation_date.replace('+', ' ')}</p>
           <p>Параметры запроса: <br/>{item.arguments.map(function (etim, endex) {
