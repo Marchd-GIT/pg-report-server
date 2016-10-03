@@ -1,2 +1,10 @@
 settings/settings.php
 datasets/dataset_example.json
+gulpfile.js
+scripts/source
+.idea/
+datasets/test2.json
+datasets/test_lage.json
+datasets/test_large_5m.json
+node_modules/
+settings/datastore.json
