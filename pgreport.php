@@ -5,7 +5,7 @@ class MyDB extends SQLite3
 {
     function __construct()
     {
-        $this->open('/tmp/dbmain');
+        $this->open('/tmp/pgreport.db');
     }
 }
 
@@ -18,7 +18,7 @@ function sqlite_query_action($query)
 EOF;
 
     if (!$result = $db->query($sql)) {
-        $db->exec('CREATE TABLE query_result (id,result)');
+        $db->exec('CREATE TABLE query_result (id,result,processid)');
         $result = $db->query($sql);
     }
 
@@ -46,7 +46,7 @@ function sqlite_query_change($query)
 EOF;
 
     if (!$result = $db->query($sql)) {
-        $db->exec('CREATE TABLE query_result (id,result)');
+        $db->exec('CREATE TABLE query_result (id,result,processid)');
         $result = $db->query($sql);
     }
 
@@ -61,6 +61,8 @@ EOF;
 function rm_result_by_id()
 {
     $id = isset($_POST['id']) ? $_POST['id'] : '';
+
+    exec("kill -10 ".get_processid_by_id($id)." 2>&1");
 
     $query = "DELETE FROM query_result WHERE id = '" . "$id" . "';";
 
@@ -81,7 +83,7 @@ function get_result_by_id()
     $format = isset($_POST['format']) ? $_POST['format'] : '';
     $id = isset($_POST['id']) ? $_POST['id'] : '';
 
-    $query = "SELECT * FROM query_result WHERE id = '" . "$id" . "' limit 1;";
+    $query = "SELECT * FROM query_result WHERE id = '" . "$id" . "' limit 1";
     $result = sqlite_query_action($query);
     $res = '';
 
@@ -113,10 +115,31 @@ function get_result_by_id()
     }
 }
 
-function set_new_result($guid, $result)
+function get_processid_by_id($id)
+{
+
+    $query = "SELECT * FROM query_result WHERE id = '" . "$id" . "' limit 1";
+    $result = sqlite_query_action($query);
+    $res = '';
+
+    if ($result) {
+        while ($row = $result->fetchArray()) {
+            $res = $row['processid'];
+        }
+        if ($res != '') {
+            return $res;
+        } else {
+            echo "{\"status\" : \"2\"}";
+        }
+    } else {
+        echo "{\"status\" : \"3\"}";
+    }
+}
+
+function set_new_result($guid, $result,$processid)
 {
     if ($result == '' && $guid != '') {
-        $query = "INSERT INTO query_result (id,result) VALUES ('" . $guid . "','{\"status\" : \"1\"}');";
+        $query = "INSERT INTO query_result (id,result,processid) VALUES ('" . $guid . "','{\"status\" : \"1\"}','" . $processid . "');";
         sqlite_query_change($query);
     } elseif ($result != '' && $guid != '') {
         $query = "UPDATE query_result set result='" . $result . "' where id= '" . $guid . "'";
@@ -132,7 +155,6 @@ function get_select_row()
     if ($query !== '') {
         $json_params = json_decode($query);
         $datasets = get_datasets(true);
-        //var_dump($datasets);
         foreach ($datasets as $key=>$value){
             if($value->ID_Report == $json_params->DataSet){
                 $datasetid=$key;
@@ -237,13 +259,13 @@ function query_run($connection_string, $args_array, $query_string, $format, $nam
             $guid = getGUID();
             return_cookie($guid, $name, $args_array);
             header('Content-Type: application/json');
-            echo '{"status" : "1"}';
-            set_new_result($guid, '');
             $arr_send = json_encode($args_array);
-            exec("php ./large_query.php '" . "$connection_string" . "' '" . "$arr_send" . "' '" . "$query_string" . "' '" . "$format" . "' '" . "$guid" . "' >/dev/null 2>/dev/null &");
-            /*            foreach ($a as $b) {
-                            echo $b . "#\n";
+            exec("php ./large_query.php '" . "$connection_string" . "' '" . "$arr_send" . "' '" . "$query_string" . "' '" . "$format" . "' '" . "$guid" . "'> /dev/null 2>/dev/null &",$a);
+/*                       foreach ($a as $b) {
+                            echo $b;
                         }*/
+            sleep(1);
+            echo '{"status" : "1"}';
             pg_cancel_query($dbconn);
             pg_flush($dbconn);
             exit;
@@ -417,7 +439,7 @@ function query_slow($dbconn, $guid){
     }
     $final = json_encode(result_to_json($result));
 
-    set_new_result($guid, $final);
+    set_new_result($guid, $final, ' ');
     pg_free_result($result);
 }
 
