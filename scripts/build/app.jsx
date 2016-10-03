@@ -5,17 +5,17 @@ var DataTable = React.createClass({
         if (data && data.fields) {
             header = data.fields.map(function (item, index) {
                 return (
-                    <th>{item}</th>
+                    <th key={index}>{item}</th>
                 )
             });
             body = data.rows.map(function (row, index) {
                 return (
-                    <tr>
+                    <tr key={index}>
                         {
                             (function () {
                                 var items = row.map(function (item, index) {
                                     return (
-                                        <td>{item}</td>
+                                        <td key={index}>{item}</td>
                                     )
                                 });
                                 return items;
@@ -25,9 +25,9 @@ var DataTable = React.createClass({
                 )
             });
         }
-        var table = <table>
+        var table = <table><tbody>
             <tr>{header}</tr>
-            {body}</table>;
+            {body}</tbody></table>;
         return table;
     },
 
@@ -43,9 +43,12 @@ var DeferredReports = React.createClass({
     getInitialState: function(){
         return{
             state: 'ready',
-            requests: null
+            requests: false
         }
     },
+/*    componentWillMount(){
+        !this.state.requests ? this.setState({requests:true}) : null;
+    },*/
     getCookie: function(name){
         var matches = document.cookie.match(new RegExp(
             "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
@@ -56,8 +59,8 @@ var DeferredReports = React.createClass({
         var self = this;
         if(this.getCookie('QUERIES')){
             var queries = JSON.parse(this.getCookie('QUERIES'));
-            if(queries){
-                var DReportsList = queries.map(function(item, index){
+            if(queries.length > 0 ){
+                 var DReportsList = queries.map(function(item, index){
                     var value = {
                         item : item,
                         index : index,
@@ -68,8 +71,11 @@ var DeferredReports = React.createClass({
                     )
                 });
 
-                !this.state.requests ? this.setState({requests:true}) : null;
+                this.state.requests=true;
                 return DReportsList;
+            }
+            else{
+                this.state.requests=false;
             }
         }
     },
@@ -77,7 +83,6 @@ var DeferredReports = React.createClass({
     render: function () {
         return (
             <div>
-                <p>Отложенные запросы.</p>
                 <p>{this.state.requests ? 'Запросы в ожидании:' : 'Нет запросов'}</p>
                 <ReactCSSTransitionGroup
                     transitionName="slide"
@@ -333,7 +338,7 @@ var Interface = React.createClass({
                 var blob = new Blob([data]);
                 var link = document.createElement('a');
                 link.href = window.URL.createObjectURL(blob);
-                link.download = this.state.dataSets[this.state.currDS].NameReport + ".xls";
+                link.download = (this.state.dataSets[this.state.currDS].NameReport + ".xls").replace(/\+/g, ' ');
                 link.click();
             }.bind(this)
         })
@@ -348,7 +353,7 @@ var Interface = React.createClass({
                 var blob = new Blob([data]);
                 var link = document.createElement('a');
                 link.href = window.URL.createObjectURL(blob);
-                link.download = this.state.dataSets[this.state.currDS].NameReport + ".csv";
+                link.download = (this.state.dataSets[this.state.currDS].NameReport + ".csv").replace(/\+/g, ' ');
                 link.click();
             }.bind(this)
         })
@@ -410,7 +415,9 @@ var SingleDeferredReport = React.createClass({
     componentDidMount: function () {
         this.getStatus();
     },
-
+    componentWillUnmount () {
+        clearTimeout(this.state.timeout);
+    },
     getCookie: function(name){
         var matches = document.cookie.match(new RegExp(
             "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
@@ -445,25 +452,27 @@ var SingleDeferredReport = React.createClass({
         var position = this.props.data.index;
         var queries = JSON.parse(this.getCookie('QUERIES'));
         var dataRequest = queries[position];
-        var id = dataRequest.id;
-        var name = dataRequest.name;
-        var date = dataRequest.creation_date;
-        $.ajax({
-            type: "POST",
-            url: '/',
-            data: {action: 'get_result', id: id, format: "json"},
-            success: function (data) {
-                if(data.status == '0'){
-                    notice('Отчет '+name+' готов!','Время старта: '+date);
-                    this.setState({statusQueryString : "Готов"});
-                    clearTimeout(this.state.timeout);
-                }else if(data.status  == '1'){
-                    //this.setState({statusQueryString : "Выполняется"});
-                    setTimeout(this.getStatus,1000);
-                }
+        if (typeof dataRequest != "undefined") {
+            var id = dataRequest.id;
+            var name = dataRequest.name;
+            var date = dataRequest.creation_date;
+            $.ajax({
+                type: "POST",
+                url: '/',
+                data: {action: 'get_result', id: id, format: "json"},
+                success: function (data) {
+                    if (data.status == '0') {
+                        notice(('Отчет ' + name + ' готов!').replace(/\+/g, ' '), ('Время старта: ' + date).replace(/\+/g, ' '));
+                        this.setState({statusQueryString: "Готов"});
+                        //clearTimeout(this.state.timeout);
+                    } else if (data.status == '1') {
+                        //this.setState({statusQueryString : "Выполняется"});
+                        setTimeout(this.getStatus, 1000);
+                    }
 
-            }.bind(this)
-        });
+                }.bind(this)
+            });
+        }
     },
 
     getDataCSV: function(e){
@@ -515,7 +524,6 @@ var SingleDeferredReport = React.createClass({
         var queries = JSON.parse(this.getCookie('QUERIES'));
         var dataRequest = queries[position];
         var id = dataRequest.id;
-
         $.ajax({
             type: "POST",
             url: '/',

@@ -1,8 +1,6 @@
 settings/datastore.json
 settings/settings.php
 datasets/*
-gulpfile.js
-scripts/source
 .idea/
 node_modules/
 
