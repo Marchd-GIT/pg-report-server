@@ -1,23 +1,23 @@
 <?php
 require "settings/settings.php";
 
-class MyDB extends SQLite3
+class Sqlite extends SQLite3
 {
     function __construct()
     {
-        $this->open('/tmp/pgreport.db');
+        $this->open('pgreport.db');
     }
 }
 
 function sqlite_query_action($query)
 {
 
-    $db = new MyDB();
+    $db = new Sqlite();
     $sql = <<<EOF
     $query;
 EOF;
 
-    if (!$result = $db->query($sql)) {
+    if (@!$result = $db->query($sql)) {
         $db->exec('CREATE TABLE query_result (id,result,processid)');
         $result = $db->query($sql);
     }
@@ -40,7 +40,7 @@ EOF;
 function sqlite_query_change($query)
 {
 
-    $db = new MyDB();
+    $db = new Sqlite();
     $sql = <<<EOF
     $query;
 EOF;
@@ -169,7 +169,7 @@ function get_select_row()
             query_run(get_connection_string($datasets[$json_params->DataSet]->DataStore), $empty, $sql_query, "json", '');
         }
     } else
-        echo "Bed query!";
+        echo "in function get_select_row query in empty\n";
 }
 
 function get_connection_string($id_data_store)
@@ -182,12 +182,14 @@ function get_connection_string($id_data_store)
     foreach ($json as $value)
         if ($id_data_store == $value->id)
             return $value->connection_string;
+
+
 }
 
 function get_datasets($flag)
 {
     header('Content-Type: application/json');
-    $dsetdir = dir("datasets");
+    @$dsetdir = dir("datasets") ?dir("datasets")  : exit("[{\"status\":\"2\"},{\"exception\":\"Error, no such datasets directory\"}]");
     $files = array();
     while (false !== ($entry = $dsetdir->read())) {
         if (preg_match('/.*.json/', $entry))
@@ -242,7 +244,7 @@ function query_run($connection_string, $args_array, $query_string, $format, $nam
     $dbconn = pg_connect($connection_string);
 
     if (!$dbconn) {
-        echo "An error occured connect to database.\n";
+        echo "In function query_run an error occured connect to database.\n";
         exit;
     }
 
@@ -261,9 +263,6 @@ function query_run($connection_string, $args_array, $query_string, $format, $nam
             header('Content-Type: application/json');
             $arr_send = json_encode($args_array);
             exec("php ./large_query.php '" . "$connection_string" . "' '" . "$arr_send" . "' '" . "$query_string" . "' '" . "$format" . "' '" . "$guid" . "'> /dev/null 2>/dev/null &",$a);
-/*                       foreach ($a as $b) {
-                            echo $b;
-                        }*/
             sleep(1);
             echo '{"status" : "1"}';
             pg_cancel_query($dbconn);
@@ -309,7 +308,6 @@ function rm_cookie($guid)
         $i++;
     }
     sort($cookie_array);
-
 
     setcookie("QUERIES", json_encode($cookie_array), time() + $tlc, '/', '.' . $url);
 }
@@ -357,7 +355,6 @@ function json_to_xls($result_json)
 
     $result = json_decode($result_json);
     echo '<html><body><table height=auto width=auto border=\'1\' rules=\'rows\' ><tr>';
-
     foreach ($result->body->fields as $fieldName) {
         echo '<th bgcolor=\'#16a085\'>' . $fieldName . '</th>';
     }
@@ -370,11 +367,12 @@ function json_to_xls($result_json)
         echo "</tr>";
 
     }
+    echo'</table></body></html>';
 }
 
 function json_to_csv($result_json)
 {
-
+    global $separator;
     header('Content-Type: text/html; charset=utf-8');
     header('P3P: CP="NOI ADM DEV PSAi COM NAV OUR OTRo STP IND DEM"');
     header('Cache-Control: no-store, no-cache, must-revalidate');
@@ -387,14 +385,14 @@ function json_to_csv($result_json)
     $result = json_decode($result_json);
 
     foreach ($result->body->fields as $fieldName) {
-        echo $fieldName . "\t";
+        echo $fieldName . $separator;
     }
-    echo "\n";
+    echo $separator;
     foreach ($result->body->rows as $row) {
         foreach ($row as $item) {
-            echo $item . "\t";
+            echo $item . $separator;
         }
-        echo "\n";
+        echo $separator;
     }
 }
 
@@ -407,7 +405,7 @@ function query_fast($dbconn, $format)
     }
 
     if (!$result) {
-        echo "An error occured.\n";
+        echo "in function query_fast SQL result returned error\n";
         exit;
     }
 
@@ -434,7 +432,7 @@ function query_slow($dbconn, $guid){
     }
 
     if (!$result) {
-        echo "An error occured.\n";
+        echo "in function query_slow SQL result returned error\n";
         exit;
     }
     $final = json_encode(result_to_json($result));
@@ -449,24 +447,18 @@ function json_query_run($format)
     $query = isset($_POST['query']) ? $_POST['query'] : '';
     if ($query !== '') {
         $json_params = json_decode($query);
-        //var_dump($json_params);
 
         $datasets = get_datasets(true);
-
 
         $cur_dataset = (object)[];
         foreach ($datasets as $dataset) {
             if ($dataset->ID_Report == $json_params->DataSet)
                 $cur_dataset = $dataset;
         }
-        //var_dump($datasets);
-        //echo get_connection_string($cur_dataset->DataStore);
-        //var_dump($json_params->args);
-        //echo $cur_dataset->SQL_Query."!!!!";
         query_run(get_connection_string($cur_dataset->DataStore), $json_params->args, $cur_dataset->SQL_Query, $format, $cur_dataset->NameReport);
 
     } else {
-        echo "Bad query!";
+        echo "in function json_query_run query is empty";
     }
 
 }
@@ -476,17 +468,15 @@ function getGUID()
     if (function_exists('com_create_guid')) {
         return com_create_guid();
     } else {
-        mt_srand((double)microtime() * 10000);//optional for php 4.2.0 and up.
+        mt_srand((double)microtime() * 10000);
         $charid = strtoupper(md5(uniqid(rand(), true)));
         $hyphen = chr(45);// "-"
         $uuid =
-            //chr(123)// "{"
             substr($charid, 0, 8) . $hyphen
             . substr($charid, 8, 4) . $hyphen
             . substr($charid, 12, 4) . $hyphen
             . substr($charid, 16, 4) . $hyphen
             . substr($charid, 20, 12);
-        //.chr(125);// "}"
         return $uuid;
     }
 }

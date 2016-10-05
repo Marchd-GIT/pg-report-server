@@ -73,8 +73,4 @@ switch ($action) {
     default:
         echo "Bad parameters!";
 }
-//debug
-//get_connection_string("1");
-//get_datasets();
-//json_params_get("test.json");
-//query_run($connection_string, $args_array, $query_string);*/
+
