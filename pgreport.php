@@ -51,8 +51,10 @@ EOF;
     }
 
     if ($db->changes() == 0) {
+        $db->close();
         return $db->changes();
     } else {
+        $db->close();
         return $result;
     }
 
@@ -240,38 +242,40 @@ function query_prepare($query, $args_array)
 
 function query_run($connection_string, $args_array, $query_string, $format, $name)
 {
-    global $slow;
-    $dbconn = pg_connect($connection_string);
+    //global $slow;
+    //$dbconn = pg_connect($connection_string);
 
-    if (!$dbconn) {
-        echo "In function query_run an error occured connect to database.\n";
-        exit;
-    }
+    //if (!$dbconn) {
+      //  echo "In function query_run an error occured connect to database.\n";
+     //   exit;
+    //}
 
-    $query = query_prepare(base64_decode("$query_string"), $args_array);
+    //$query = query_prepare(base64_decode("$query_string"), $args_array);
 
-    if (!pg_connection_busy($dbconn)) {
-        pg_send_query($dbconn, $query);
-    }
+    ///if (!pg_connection_busy($dbconn)) {
+    //    pg_send_query($dbconn, $query);
+   // }
 
-    $counter = 0;
-    while (pg_connection_busy($dbconn)) {
-        sleep(1);
-        if ($counter == $slow) {
-            $guid = getGUID();
-            return_cookie($guid, $name, $args_array);
+    //$counter = 0;
+    $guid = getGUID();
+    set_new_result($guid,'','');
+    return_cookie($guid, $name, $args_array);
+   // while (pg_connection_busy($dbconn)) {
+   //     sleep(1);
+  //      if ($counter == $slow) {
+
             header('Content-Type: application/json');
             $arr_send = json_encode($args_array);
             exec("php ./large_query.php '" . "$connection_string" . "' '" . "$arr_send" . "' '" . "$query_string" . "' '" . "$format" . "' '" . "$guid" . "'> /dev/null 2>/dev/null &",$a);
-            sleep(1);
+           // sleep(1);
             echo '{"status" : "1"}';
-            pg_cancel_query($dbconn);
-            pg_flush($dbconn);
+        //    pg_cancel_query($dbconn);
+        //    pg_flush($dbconn);
             exit;
-        }
-        $counter++;
-    }
-    query_fast($dbconn, $format);
+     //   }
+   //     $counter++;
+  //  }
+   // query_fast($dbconn, $format);
 
 }
 
