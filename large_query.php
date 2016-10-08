@@ -6,11 +6,10 @@ declare(ticks = 1);
 $connection_string = $argv[1];
 $args_array = json_decode($argv[2]);
 $query_string = $argv[3];
-$format = $argv[4];
-$guid = $argv[5];
+$guid = $argv[4];
 $dbconn = '';
 
-function query_background($connection_string, $args_array, $query_string, $format, $guid)
+function query_background($connection_string, $args_array, $query_string, $guid)
 {
     global $dbconn;
     set_new_result($guid, '', getmypid());
@@ -44,6 +43,6 @@ function query_background($connection_string, $args_array, $query_string, $forma
     query_slow($dbconn,$guid);
 }
 
-query_background($connection_string, $args_array, $query_string, $format, $guid);
+query_background($connection_string, $args_array, $query_string, $guid);
 
 ?>

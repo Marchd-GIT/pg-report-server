@@ -328,36 +328,6 @@ var Interface = React.createClass({
             }.bind(this)
         })
     },
-    dataRequestXLS: function () {
-        var data = this.prepareData();
-        $.ajax({
-            type: "POST",
-            url: '/',
-            data: {action: 'run_query_xls', query: data},
-            success: function (data) {
-                var blob = new Blob([data]);
-                var link = document.createElement('a');
-                link.href = window.URL.createObjectURL(blob);
-                link.download = (this.state.dataSets[this.state.currDS].NameReport + ".xls").replace(/\+/g, ' ');
-                link.click();
-            }.bind(this)
-        })
-    },
-    dataRequestCSV: function () {
-        var data = this.prepareData();
-        $.ajax({
-            type: "POST",
-            url: '/',
-            data: {action: 'run_query_csv', query: data},
-            success: function (data) {
-                var blob = new Blob([data]);
-                var link = document.createElement('a');
-                link.href = window.URL.createObjectURL(blob);
-                link.download = (this.state.dataSets[this.state.currDS].NameReport + ".csv").replace(/\+/g, ' ');
-                link.click();
-            }.bind(this)
-        })
-    },
     drawTable: function () {
         return <DataTable data={{tableData: this.state.tableData}}/>
     },
@@ -385,14 +355,6 @@ var Interface = React.createClass({
                             Сформировать
                         </button>
                         <br/>
-                        <button style={{display: this.state.currDS == 'default' ? 'none' : ''}}
-                                onClick={this.dataRequestCSV}>
-                            CSV
-                        </button>
-                        <button style={{display: this.state.currDS == 'default' ? 'none' : ''}}
-                                onClick={this.dataRequestXLS}>
-                            XLS
-                        </button>
                     </div>
                     <div>
                         <DeferredReports interface={{interface:this}} />

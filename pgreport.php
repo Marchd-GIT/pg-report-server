@@ -6,6 +6,7 @@ class Sqlite extends SQLite3
     function __construct()
     {
         $this->open('pgreport.db');
+        $this->busyTimeout(2000);
     }
 }
 
@@ -64,7 +65,7 @@ function rm_result_by_id()
 {
     $id = isset($_POST['id']) ? $_POST['id'] : '';
 
-    exec("kill -10 ".get_processid_by_id($id)." 2>&1");
+    exec("kill -10 " . get_processid_by_id($id) . " 2>&1");
 
     $query = "DELETE FROM query_result WHERE id = '" . "$id" . "';";
 
@@ -113,7 +114,7 @@ function get_result_by_id()
             echo "{\"status\" : \"2\"}";
         }
     } else {
-        echo "{\"status\" : \"3\"}";
+        echo genERROR('Request failed in function get_result_by_id()');
     }
 }
 
@@ -138,7 +139,7 @@ function get_processid_by_id($id)
     }
 }
 
-function set_new_result($guid, $result,$processid)
+function set_new_result($guid, $result, $processid)
 {
     if ($result == '' && $guid != '') {
         $query = "INSERT INTO query_result (id,result,processid) VALUES ('" . $guid . "','{\"status\" : \"1\"}','" . $processid . "');";
@@ -152,26 +153,23 @@ function set_new_result($guid, $result,$processid)
 
 function get_select_row()
 {
-    $query = isset($_POST['query']) ? $_POST['query'] : '';
+    $query = isset($_POST['query']) ? $_POST['query'] : exit(genERROR('in function get_select_row() query in empty'));
     $sql_query = "";
-    if ($query !== '') {
-        $json_params = json_decode($query);
-        $datasets = get_datasets(true);
-        foreach ($datasets as $key=>$value){
-            if($value->ID_Report == $json_params->DataSet){
-                $datasetid=$key;
-            }
+    $json_params = json_decode($query);
+    $datasets = get_datasets(true);
+    foreach ($datasets as $key => $value) {
+        if ($value->ID_Report == $json_params->DataSet) {
+            $datasetid = $key;
         }
-        foreach ($datasets[$datasetid]->ParametersList as $val) {
-            if ($val->id == $json_params->ID_Params)
-                $sql_query = $val->query;
-        }
-        $empty = [];
-        if ($sql_query != ''){
-            query_run(get_connection_string($datasets[$json_params->DataSet]->DataStore), $empty, $sql_query, "json", '');
-        }
-    } else
-        echo "in function get_select_row query in empty\n";
+    }
+    foreach ($datasets[$datasetid]->ParametersList as $val) {
+        if ($val->id == $json_params->ID_Params)
+            $sql_query = $val->query;
+    }
+    $empty = [];
+    if ($sql_query != '') {
+        query_run(get_connection_string($datasets[$json_params->DataSet]->DataStore), $empty, $sql_query, 'small', '');
+    }
 }
 
 function get_connection_string($id_data_store)
@@ -191,7 +189,7 @@ function get_connection_string($id_data_store)
 function get_datasets($flag)
 {
     header('Content-Type: application/json');
-    @$dsetdir = dir("datasets") ?dir("datasets")  : exit("[{\"status\":\"2\"},{\"exception\":\"Error, no such datasets directory\"}]");
+    @$dsetdir = dir("datasets") ? dir("datasets") : exit(genERROR('Error, no such datasets directory'));
     $files = array();
     while (false !== ($entry = $dsetdir->read())) {
         if (preg_match('/.*.json/', $entry))
@@ -240,43 +238,30 @@ function query_prepare($query, $args_array)
     return $query;
 }
 
-function query_run($connection_string, $args_array, $query_string, $format, $name)
+function query_run($connection_string, $args_array, $query_string, $type, $name)
 {
-    //global $slow;
-    //$dbconn = pg_connect($connection_string);
-
-    //if (!$dbconn) {
-      //  echo "In function query_run an error occured connect to database.\n";
-     //   exit;
-    //}
-
-    //$query = query_prepare(base64_decode("$query_string"), $args_array);
-
-    ///if (!pg_connection_busy($dbconn)) {
-    //    pg_send_query($dbconn, $query);
-   // }
-
-    //$counter = 0;
-    $guid = getGUID();
-    set_new_result($guid,'','');
-    return_cookie($guid, $name, $args_array);
-   // while (pg_connection_busy($dbconn)) {
-   //     sleep(1);
-  //      if ($counter == $slow) {
-
-            header('Content-Type: application/json');
-            $arr_send = json_encode($args_array);
-            exec("php ./large_query.php '" . "$connection_string" . "' '" . "$arr_send" . "' '" . "$query_string" . "' '" . "$format" . "' '" . "$guid" . "'> /dev/null 2>/dev/null &",$a);
-           // sleep(1);
-            echo '{"status" : "1"}';
-        //    pg_cancel_query($dbconn);
-        //    pg_flush($dbconn);
+    if ($type == 'full') {
+        $guid = getGUID();
+        set_new_result($guid, '', '');
+        return_cookie($guid, $name, $args_array);
+        header('Content-Type: application/json');
+        $arr_send = json_encode($args_array);
+        echo '{"status" : "1"}';
+        exec("php ./large_query.php '" . "$connection_string" . "' '" . "$arr_send" . "' '" . "$query_string" . "' '" . "$guid" . "'> /dev/null 2>/dev/null &", $a);
+    } elseif ($type == 'small') {
+        $dbconn = pg_connect($connection_string);
+        if (!$dbconn) {
+            echo genERROR('In function query_run() an error occured connect to database.');
             exit;
-     //   }
-   //     $counter++;
-  //  }
-   // query_fast($dbconn, $format);
-
+        }
+        $query = query_prepare(base64_decode("$query_string"), $args_array);
+        if (!pg_connection_busy($dbconn)) {
+            pg_send_query($dbconn, $query);
+        }
+        query_fast($dbconn);
+    } else {
+        echo genERROR('error parameter "type" in function query_run()');
+    }
 }
 
 function return_cookie($guid, $name, $args_array)
@@ -371,7 +356,7 @@ function json_to_xls($result_json)
         echo "</tr>";
 
     }
-    echo'</table></body></html>';
+    echo '</table></body></html>';
 }
 
 function json_to_csv($result_json)
@@ -400,8 +385,9 @@ function json_to_csv($result_json)
     }
 }
 
-function query_fast($dbconn, $format)
+function query_fast($dbconn)
 {
+    $result = (object)[];
     $res = (object)[];
     while ($res) {
         $result = $res;
@@ -409,34 +395,27 @@ function query_fast($dbconn, $format)
     }
 
     if (!$result) {
-        echo "in function query_fast SQL result returned error\n";
+        echo genERROR('in function query_fast() SQL result returned error');
         exit;
     }
 
-    if ($format == "json") {
-        header('Content-Type: application/json');
-        echo json_encode(result_to_json($result), JSON_UNESCAPED_UNICODE);
-    } elseif ($format == "xls") {
-        json_to_xls(json_encode(result_to_json($result)));
-    } elseif ($format == "csv") {
-        json_to_csv(json_encode(result_to_json($result)));
-    }
-
+    header('Content-Type: application/json');
+    echo json_encode(result_to_json($result), JSON_UNESCAPED_UNICODE);
     pg_free_result($result);
-    pg_flush($dbconn);
     pg_close($dbconn);
 }
 
-function query_slow($dbconn, $guid){
+function query_slow($dbconn, $guid)
+{
 
-    $res= (object)[];
+    $res = (object)[];
     while ($res) {
         $result = $res;
         $res = pg_get_result($dbconn);
     }
 
     if (!$result) {
-        echo "in function query_slow SQL result returned error\n";
+        echo genERROR('in function query_slow() SQL result returned error');
         exit;
     }
     $final = json_encode(result_to_json($result));
@@ -445,7 +424,7 @@ function query_slow($dbconn, $guid){
     pg_free_result($result);
 }
 
-function json_query_run($format)
+function json_query_run()
 {
 
     $query = isset($_POST['query']) ? $_POST['query'] : '';
@@ -459,10 +438,10 @@ function json_query_run($format)
             if ($dataset->ID_Report == $json_params->DataSet)
                 $cur_dataset = $dataset;
         }
-        query_run(get_connection_string($cur_dataset->DataStore), $json_params->args, $cur_dataset->SQL_Query, $format, $cur_dataset->NameReport);
+        query_run(get_connection_string($cur_dataset->DataStore), $json_params->args, $cur_dataset->SQL_Query, 'full', $cur_dataset->NameReport);
 
     } else {
-        echo "in function json_query_run query is empty";
+        echo genERROR('in function json_query_run() query is empty');
     }
 
 }
@@ -485,4 +464,8 @@ function getGUID()
     }
 }
 
-?>
+function genERROR($error_string){
+    header('Content-Type: application/json');
+    return '{"status":"3","exception":"'.$error_string.'"}';
+}
+

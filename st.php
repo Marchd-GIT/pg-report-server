@@ -53,13 +53,7 @@ switch ($action) {
         get_datasets(false);
         break;
     case "run_query":
-        json_query_run("json");
-        break;
-    case "run_query_xls":
-        json_query_run("xls");
-        break;
-    case "run_query_csv":
-        json_query_run("csv");
+        json_query_run();
         break;
     case "get_select_row":
         get_select_row();
