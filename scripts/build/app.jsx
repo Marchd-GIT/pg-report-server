@@ -46,9 +46,22 @@ var DeferredReports = React.createClass({
             requests: false
         }
     },
-/*    componentWillMount(){
-        !this.state.requests ? this.setState({requests:true}) : null;
-    },*/
+    rmData: function(e){
+        this.setState({state: 'loading'});
+        var position = e.target.name;
+        var queries = JSON.parse(this.getCookie('QUERIES'));
+        var dataRequest = queries[position];
+        var id = dataRequest.id;
+        $.ajax({
+            type: "POST",
+            url: '/',
+            data: {action: 'rm_result', id: id},
+            success: function (data) {
+                this.getDReportsInfo();
+                this.setState({state: 'ready' });
+            }.bind(this)
+        });
+    },
     getCookie: function(name){
         var matches = document.cookie.match(new RegExp(
             "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
@@ -65,7 +78,7 @@ var DeferredReports = React.createClass({
                         item : item,
                         index : index,
                         interface : self.props.interface.interface,
-                        phaser: self};
+                        father: self};
                     return(
                         <SingleDeferredReport key={item.id} data={value}/>
                     )
@@ -216,7 +229,7 @@ var Interface = React.createClass({
         if (this.state.dataSets) {
             var options = this.state.dataSets.map(function (item, index) {
                 return (
-                    <option value={item.ID_Report} key={item.ID_Report}>
+                    <option value={item.ID_Report} key={index}>
                         {item.NameReport}
                     </option>
                 )
@@ -335,8 +348,8 @@ var Interface = React.createClass({
     render: function () {
 
         return (
-            <div className="wrapper">
-                <div className="ui">
+            <div className="wrapper" id="wrapper">
+                <div className="ui" id="ui">
                     <div className="logo">
                         Postgres Report Server
                     </div>
@@ -360,7 +373,7 @@ var Interface = React.createClass({
                         <DeferredReports interface={{interface:this}} />
                     </div>
                 </div>
-                <div className="dataTable">
+                <div className="dataTable" >
                     {this.state.status == 'loading' ? 'loading...' : this.state.error ? this.state.error : this.drawTable()}
                 </div>
             </div>
@@ -480,37 +493,21 @@ var SingleDeferredReport = React.createClass({
         });
     },
 
-    rmData: function(e){
-        this.setState({state: 'loading'});
-        var position = e.target.name;
-        var queries = JSON.parse(this.getCookie('QUERIES'));
-        var dataRequest = queries[position];
-        var id = dataRequest.id;
-        $.ajax({
-            type: "POST",
-            url: '/',
-            data: {action: 'rm_result', id: id},
-            success: function (data) {
-                this.props.data.phaser.getDReportsInfo();
-                this.props.data.phaser.setState({state: 'ready' });
-            }.bind(this)
-        });
-    },
-
-    render: function() {
+  render: function() {
         var item = this.props.data.item;
         var index = this.props.data.index;
+        var father = this.props.data.father;
         return (
             <div className="repUI" id={index}>
                 <p>Имя: {item.name.replace(/\+/g, ' ')}</p>
                 <p>Состояние: {this.state.statusQueryString}</p>
                 <p>Дата создания: <br/>{item.creation_date.replace('+', ' ')}</p>
-                <p>Параметры запроса: <br/>{item.arguments.map(function (etim, endex) {
-                    return (<p>{etim.replace('+', ' ')}</p>)
-                })}
+                <p>Параметры запроса: <br/>{item.arguments.length > 0 ? item.arguments.map(function (itim,index) {
+                    return (<p>№{index}:{itim.replace('+', ' ')}</p>)
+                }) : <p>Нет параметров</p>}
                 </p>
                 <button name={index} onClick={this.getData}>Получить</button>
-                <button name={index} onClick={this.rmData}>Удалить</button>
+                <button name={index} onClick={father.rmData}>Удалить</button>
                 <br/>
                 <button name={index} onClick={this.getDataCSV}>
                     CSV

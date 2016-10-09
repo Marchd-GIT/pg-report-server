@@ -64,17 +64,18 @@ EOF;
 function rm_result_by_id()
 {
     $id = isset($_POST['id']) ? $_POST['id'] : '';
-
-    exec("kill -10 " . get_processid_by_id($id) . " 2>&1");
-
+    $procid = get_processid_by_id($id);
+    if($procid != '') {
+        exec("kill -10 " .$procid. " 2>&1");
+    }
     $query = "DELETE FROM query_result WHERE id = '" . "$id" . "';";
 
     $result = sqlite_query_change($query);
-
+    header('Content-Type: application/json');
     if ($result) {
-        echo "{\"status\" : \"0\"}";
+        echo '{"status" : "0","delail":"success delete row"}';
     } else {
-        echo "{\"status\" : \"2\"}";
+        echo '{"status" : "2","delail":"fail delete row"}';
     }
 
     rm_cookie($id);
@@ -107,11 +108,11 @@ function get_result_by_id()
                     json_to_csv($res);
                     break;
                 default:
-                    echo "{\"status\" : \"2\"}";
+                    echo '{"status" : "2"}';
                     break;
             }
         } else {
-            echo "{\"status\" : \"2\"}";
+            echo '{"status" : "2"}';
         }
     } else {
         echo genERROR('Request failed in function get_result_by_id()');
@@ -132,19 +133,24 @@ function get_processid_by_id($id)
         if ($res != '') {
             return $res;
         } else {
-            echo "{\"status\" : \"2\"}";
+            return '';
         }
     } else {
-        echo "{\"status\" : \"3\"}";
+        return '';
     }
 }
 
 function set_new_result($guid, $result, $processid)
 {
-    if ($result == '' && $guid != '') {
+    if ($guid != '' && $processid == '' && $result == '') {
         $query = "INSERT INTO query_result (id,result,processid) VALUES ('" . $guid . "','{\"status\" : \"1\"}','" . $processid . "');";
         sqlite_query_change($query);
-    } elseif ($result != '' && $guid != '') {
+    }
+    elseif($guid != '' && $processid != '' && $result == '' ){
+        $query = "UPDATE query_result set processid='" . $processid . "' where id= '" . $guid . "'";
+        sqlite_query_change($query);
+        }
+    elseif ($result != '' && $guid != '') {
         $query = "UPDATE query_result set result='" . $result . "' where id= '" . $guid . "'";
         sqlite_query_change($query);
     }

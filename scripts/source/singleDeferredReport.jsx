@@ -111,37 +111,21 @@ var SingleDeferredReport = React.createClass({
         });
     },
 
-    rmData: function(e){
-        this.setState({state: 'loading'});
-        var position = e.target.name;
-        var queries = JSON.parse(this.getCookie('QUERIES'));
-        var dataRequest = queries[position];
-        var id = dataRequest.id;
-        $.ajax({
-            type: "POST",
-            url: '/',
-            data: {action: 'rm_result', id: id},
-            success: function (data) {
-                this.props.data.phaser.getDReportsInfo();
-                this.props.data.phaser.setState({state: 'ready' });
-            }.bind(this)
-        });
-    },
-
-    render: function() {
+  render: function() {
         var item = this.props.data.item;
         var index = this.props.data.index;
+        var father = this.props.data.father;
         return (
             <div className="repUI" id={index}>
                 <p>Имя: {item.name.replace(/\+/g, ' ')}</p>
                 <p>Состояние: {this.state.statusQueryString}</p>
                 <p>Дата создания: <br/>{item.creation_date.replace('+', ' ')}</p>
-                <p>Параметры запроса: <br/>{item.arguments.map(function (etim, endex) {
-                    return (<p>{etim.replace('+', ' ')}</p>)
-                })}
+                <p>Параметры запроса: <br/>{item.arguments.length > 0 ? item.arguments.map(function (itim,index) {
+                    return (<p>№{index}:{itim.replace('+', ' ')}</p>)
+                }) : <p>Нет параметров</p>}
                 </p>
                 <button name={index} onClick={this.getData}>Получить</button>
-                <button name={index} onClick={this.rmData}>Удалить</button>
+                <button name={index} onClick={father.rmData}>Удалить</button>
                 <br/>
                 <button name={index} onClick={this.getDataCSV}>
                     CSV

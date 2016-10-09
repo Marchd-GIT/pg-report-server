@@ -29,7 +29,7 @@ var Interface = React.createClass({
         if (this.state.dataSets) {
             var options = this.state.dataSets.map(function (item, index) {
                 return (
-                    <option value={item.ID_Report} key={item.ID_Report}>
+                    <option value={item.ID_Report} key={index}>
                         {item.NameReport}
                     </option>
                 )
@@ -148,8 +148,8 @@ var Interface = React.createClass({
     render: function () {
 
         return (
-            <div className="wrapper">
-                <div className="ui">
+            <div className="wrapper" id="wrapper">
+                <div className="ui" id="ui">
                     <div className="logo">
                         Postgres Report Server
                     </div>
@@ -173,7 +173,7 @@ var Interface = React.createClass({
                         <DeferredReports interface={{interface:this}} />
                     </div>
                 </div>
-                <div className="dataTable">
+                <div className="dataTable" >
                     {this.state.status == 'loading' ? 'loading...' : this.state.error ? this.state.error : this.drawTable()}
                 </div>
             </div>

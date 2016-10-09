@@ -5,9 +5,22 @@ var DeferredReports = React.createClass({
             requests: false
         }
     },
-/*    componentWillMount(){
-        !this.state.requests ? this.setState({requests:true}) : null;
-    },*/
+    rmData: function(e){
+        this.setState({state: 'loading'});
+        var position = e.target.name;
+        var queries = JSON.parse(this.getCookie('QUERIES'));
+        var dataRequest = queries[position];
+        var id = dataRequest.id;
+        $.ajax({
+            type: "POST",
+            url: '/',
+            data: {action: 'rm_result', id: id},
+            success: function (data) {
+                this.getDReportsInfo();
+                this.setState({state: 'ready' });
+            }.bind(this)
+        });
+    },
     getCookie: function(name){
         var matches = document.cookie.match(new RegExp(
             "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
@@ -24,7 +37,7 @@ var DeferredReports = React.createClass({
                         item : item,
                         index : index,
                         interface : self.props.interface.interface,
-                        phaser: self};
+                        father: self};
                     return(
                         <SingleDeferredReport key={item.id} data={value}/>
                     )
