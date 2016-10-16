@@ -73,9 +73,9 @@ function rm_result_by_id()
     $result = sqlite_query_change($query);
     header('Content-Type: application/json');
     if ($result) {
-        echo '{"status" : "0","delail":"success delete row"}';
+        echo '{"status" : "0","detail":"success delete row"}';
     } else {
-        echo '{"status" : "2","delail":"fail delete row"}';
+        echo '{"status" : "2","detail":"fail delete row"}';
     }
 
     rm_cookie($id);

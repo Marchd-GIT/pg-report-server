@@ -33,7 +33,6 @@ var SingleDeferredReport = React.createClass({
                     this.props.data.interface.setState({error: null});
                     this.props.data.interface.setState({tableData: data.body});
                     this.setState({statusQueryString : "Готов"});
-
                 }else if(data.status  == '1'){
                     this.setState({statusQueryString : "Выполняется"});
                 }
@@ -54,15 +53,23 @@ var SingleDeferredReport = React.createClass({
                 url: '/',
                 data: {action: 'get_result', id: id, format: "json"},
                 success: function (data) {
-                    if (data.status == '0') {
-                        notice(('Отчет ' + name + ' готов!').replace(/\+/g, ' '), ('Время старта: ' + date).replace(/\+/g, ' '));
-                        this.setState({statusQueryString: "Готов"});
-                        //clearTimeout(this.state.timeout);
-                    } else if (data.status == '1') {
-                        //this.setState({statusQueryString : "Выполняется"});
-                        setTimeout(this.getStatus, 1000);
+                    switch (data.status) {
+                        case '0':
+                            notice(('Отчет ' + name + ' готов!').replace(/\+/g, ' '), ('Время старта: ' + date).replace(/\+/g, ' '));
+                            this.setState({statusQueryString: "Готов"});
+                            break;
+                        case '1':
+                            setTimeout(this.getStatus, 1000);
+                            break;
+                        case '2':
+                            notice(('Отчет ' + name + ' не содержит данных!').replace(/\+/g, ' '), ('Время старта: ' + date).replace(/\+/g, ' '));
+                            this.setState({statusQueryString: "Нет данных"});
+                            break;
+                        case '3':
+                            notice(('Отчет ' + name + ' получил ошибку!').replace(/\+/g, ' '), ('Время старта: ' + date).replace(/\+/g, ' '));
+                            this.setState({statusQueryString: "Ошибка"});
+                            break;
                     }
-
                 }.bind(this)
             });
         }

@@ -118,7 +118,7 @@ var Interface = React.createClass({
                 this.setState({tableData: data.body, error: null});
                 break;
             case '1':
-                this.setState({error: 'Долгий запрос'});
+                this.setState({error: ''});
                 break;
             case '2':
                 this.setState({error: 'Нет данных'});
@@ -137,7 +137,7 @@ var Interface = React.createClass({
             data: {action: 'run_query', query: data},
             success: function (data) {
                 this.setState({status: 'ready'});
-                this.dataHandler(data);
+                //this.dataHandler(data);
             }.bind(this)
         })
     },
