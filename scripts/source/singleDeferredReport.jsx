@@ -11,14 +11,14 @@ var SingleDeferredReport = React.createClass({
     componentWillUnmount () {
         clearTimeout(this.state.timeout);
     },
-    getCookie: function(name){
+    getCookie: function (name) {
         var matches = document.cookie.match(new RegExp(
             "(?:^|; )" + name.replace(/([\.$?*|{}\(\)\[\]\\\/\+^])/g, '\\$1') + "=([^;]*)"
         ));
         return matches ? decodeURIComponent(matches[1]) : undefined;
     },
 
-    getData: function(e){
+    getData: function (e) {
         this.setState({state: 'loading'});
         var position = e.target.name;
         var queries = JSON.parse(this.getCookie('QUERIES'));
@@ -29,18 +29,18 @@ var SingleDeferredReport = React.createClass({
             url: '/',
             data: {action: 'get_result', id: id, format: "json"},
             success: function (data) {
-                if(data.status == '0'){
+                if (data.status == '0') {
                     this.props.data.interface.setState({error: null});
                     this.props.data.interface.setState({tableData: data.body});
-                    this.setState({statusQueryString : "Готов"});
-                }else if(data.status  == '1'){
-                    this.setState({statusQueryString : "Выполняется"});
+                    this.setState({statusQueryString: "Готов"});
+                } else if (data.status == '1') {
+                    this.setState({statusQueryString: "Выполняется"});
                 }
                 this.setState({state: 'ready'});
             }.bind(this)
         });
     },
-    getStatus: function(){
+    getStatus: function () {
         var position = this.props.data.index;
         var queries = JSON.parse(this.getCookie('QUERIES'));
         var dataRequest = queries[position];
@@ -75,7 +75,7 @@ var SingleDeferredReport = React.createClass({
         }
     },
 
-    getDataCSV: function(e){
+    getDataCSV: function (e) {
         this.setState({state: 'loading'});
         var position = e.target.name;
         var queries = JSON.parse(this.getCookie('QUERIES'));
@@ -96,7 +96,7 @@ var SingleDeferredReport = React.createClass({
         });
     },
 
-    getDataXLS: function(e){
+    getDataXLS: function (e) {
         this.setState({state: 'loading'});
         var position = e.target.name;
         var queries = JSON.parse(this.getCookie('QUERIES'));
@@ -118,17 +118,18 @@ var SingleDeferredReport = React.createClass({
         });
     },
 
-  render: function() {
+    render: function () {
         var item = this.props.data.item;
         var index = this.props.data.index;
         var father = this.props.data.father;
         return (
             <div className="repUI" id={index}>
-                <p>Имя: {item.name.replace(/\+/g, ' ')}</p>
+                <p className="short_text">Имя: {item.name.replace(/\+/g, ' ')}</p>
                 <p>Состояние: {this.state.statusQueryString}</p>
-                <p>Дата создания: <br/>{item.creation_date.replace('+', ' ')}</p>
-                <p>Параметры запроса: <br/>{item.arguments.length > 0 ? item.arguments.map(function (itim,index) {
-                    return (<p>№{index}:{itim.replace('+', ' ')}</p>)
+                <p>Дата создания: <br/>{item.creation_date.replace(/\+/g, ' ')}</p>
+                <p>Параметры запроса: <br/>{item.arguments.length > 0 ? item.arguments.map(function (itim, index) {
+                    return (<p className="short_text">№{index}:{itim.replace(/\+/g, ' ')}</p>
+                    )
                 }) : <p>Нет параметров</p>}
                 </p>
                 <button name={index} onClick={this.getData}>Получить</button>

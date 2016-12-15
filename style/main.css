@@ -12,7 +12,7 @@ html, body {
 
 .container .wrapper {
     height: 100%;
-    white-space: nowrap;
+    /*white-space: nowrap;*/
     overflow: scroll;
     margin-left: 220px;
 }
@@ -134,6 +134,14 @@ html, body {
     margin-bottom: 0px;
     color: #000000;
     margin-top: 2px;
+}
+
+
+
+.short_text{
+    word-wrap: break-word;
+    width: 160px;
+    position: static;
 }
 
 .repUI {
