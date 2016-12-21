@@ -15,7 +15,7 @@ var Interface = React.createClass({
     getDatasets: function () {
         $.ajax({
             type: "POST",
-            url: '/',
+            url: '/st.php',
             data: {action: 'get_datasets'},
             success: function (data) {
                 this.setState({dataSets: data});
@@ -133,7 +133,7 @@ var Interface = React.createClass({
         var data = this.prepareData();
         $.ajax({
             type: "POST",
-            url: '/',
+            url: '/st.php',
             data: {action: 'run_query', query: data},
             success: function (data) {
                 this.setState({status: 'ready'});

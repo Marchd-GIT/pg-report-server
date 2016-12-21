@@ -61,7 +61,7 @@ var QuerySelect = React.createClass({
         var data = JSON.stringify({'DataSet': this.props.currDS.ds, 'ID_Params': id});
         $.ajax({
             type: "POST",
-            url: '/',
+            url: '/st.php',
             data: {action: 'get_select_row', query: data},
             success: function (data) {
                 this.prepareQuery(data);
