@@ -287,7 +287,7 @@ function return_cookie($guid, $name, $args_array)
     } else {
         $cookie_array[0] = $report;
     }
-    setcookie("QUERIES", json_encode($cookie_array), time() + $tlc, '/', '.' . $url);
+    setcookie("QUERIES", json_encode($cookie_array), time() + $tlc, '/', $url);
 }
 
 function rm_cookie($guid)
@@ -304,7 +304,7 @@ function rm_cookie($guid)
     }
     sort($cookie_array);
 
-    setcookie("QUERIES", json_encode($cookie_array), time() + $tlc, '/', '.' . $url);
+    setcookie("QUERIES", json_encode($cookie_array), time() + $tlc, '/', $url);
 }
 
 function result_to_json($result)
