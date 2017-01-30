@@ -349,7 +349,7 @@ function json_to_xls($result_json)
     //header('Content-Disposition: attachment; filename='..'xls');
 
     $result = json_decode($result_json);
-    echo '<html><body><table height=auto width=auto border=\'1\' rules=\'rows\' ><tr>';
+    echo '<html><meta charset="utf-8"><body><table height=auto width=auto border=\'1\' rules=\'rows\' ><tr>';
     foreach ($result->body->fields as $fieldName) {
         echo '<th bgcolor=\'#16a085\'>' . $fieldName . '</th>';
     }
