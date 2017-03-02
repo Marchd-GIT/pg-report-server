@@ -174,7 +174,7 @@ function get_select_row()
     }
     $empty = [];
     if ($sql_query != '') {
-        query_run(get_connection_string($datasets[$json_params->DataSet]->DataStore), $empty, $sql_query, 'small', '');
+        query_run(get_connection_string($datasets[$json_params->DataSet]->DataStore), $empty, $sql_query, 'pg_small', '');
     }
 }
 
@@ -246,7 +246,7 @@ function query_prepare($query, $args_array)
 
 function query_run($connection_string, $args_array, $query_string, $type, $name)
 {
-    if ($type == 'full') {
+    if ($type == 'pg_full') {
         $guid = getGUID();
         set_new_result($guid, '', '');
         return_cookie($guid, $name, $args_array);
@@ -254,7 +254,7 @@ function query_run($connection_string, $args_array, $query_string, $type, $name)
         $arr_send = json_encode($args_array);
         echo '{"status" : "1"}';
         exec("php ./large_query.php '" . "$connection_string" . "' '" . "$arr_send" . "' '" . "$query_string" . "' '" . "$guid" . "'> /dev/null 2>/dev/null &", $a);
-    } elseif ($type == 'small') {
+    } elseif ($type == 'pg_small') {
         $dbconn = pg_connect($connection_string);
         if (!$dbconn) {
             echo genERROR('In function query_run() an error occured connect to database.');
@@ -265,7 +265,17 @@ function query_run($connection_string, $args_array, $query_string, $type, $name)
             pg_send_query($dbconn, $query);
         }
         query_fast($dbconn);
-    } else {
+    }
+    elseif ($type == 'mongo') {
+        $guid = getGUID();
+        set_new_result($guid, '', '');
+        return_cookie($guid, $name, $args_array);
+        header('Content-Type: application/json');
+        $arr_send = json_encode($args_array);
+        echo '{"status" : "1"}';
+        exec("php ./mongoreport.php '" . "$connection_string" . "' '" . "$arr_send" . "' '" . "$query_string" . "' '" . "$guid" . "'> /dev/null 2>/dev/null &", $a);
+    }
+    else {
         echo genERROR('error parameter "type" in function query_run()');
     }
 }
@@ -444,7 +454,8 @@ function json_query_run()
             if ($dataset->ID_Report == $json_params->DataSet)
                 $cur_dataset = $dataset;
         }
-        query_run(get_connection_string($cur_dataset->DataStore), $json_params->args, $cur_dataset->SQL_Query, 'full', $cur_dataset->NameReport);
+        $type = isset($cur_dataset->Type) ?  $cur_dataset->Type : "pg_full";
+        query_run(get_connection_string($cur_dataset->DataStore), $json_params->args, $cur_dataset->SQL_Query, $type, $cur_dataset->NameReport);
 
     } else {
         echo genERROR('in function json_query_run() query is empty');
