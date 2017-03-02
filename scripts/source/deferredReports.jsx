@@ -55,7 +55,7 @@ var DeferredReports = React.createClass({
     render: function () {
         return (
             <div>
-                <p>{this.state.requests ? 'Запросы в ожидании:' : 'Нет запросов'}</p>
+                <p>{this.state.requests ? 'Запросы в ожидании:' : 'Нет запросов в ожидании'}</p>
                 <ReactCSSTransitionGroup
                     transitionName="slide"
                     transitionEnterTimeout={500}

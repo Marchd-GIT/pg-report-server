@@ -8,13 +8,53 @@ $query_string = $argv[3];
 $guid = $argv[4];
 
 
-
-function mongo_query_background($connection_string,$query_string,$args_array,$guid)
+function is_Date($str)
 {
-                    //$connection_string = '10.20.0.16:27017/test -u"mg" -p"serik-pk" --authenticationDatabase "admin"';
-                    //$query_string = 'ICAgICB2YXIgbWFwID0gZnVuY3Rpb24gKCkgew0KICAgICAJaWYgKHRoaXMuZW50cnkpIHsNCiAgICAgCQl2YXIgU3lzOw0KICAgICAJCXZhciBPcmc7DQogICAgIAkJdmFyIERScyA9IDA7DQogICAgIAkJdmFyIE9icyA9IDA7DQogICAgIAkJdGhpcy5lbnRyeS5mb3JFYWNoKGZ1bmN0aW9uIChlKSB7DQogICAgIAkJCWlmIChlLnJlc291cmNlLnJlc291cmNlVHlwZSA9PSAiT3JkZXJSZXNwb25zZSIpIHsNCiAgICAgCQkJCU9yZyA9IGUucmVzb3VyY2Uud2hvLnJlZmVyZW5jZS5yZXBsYWNlKG5ldyBSZWdFeHAoJ09yZ2FuaXphdGlvbicsICdnaScpLCAnJykucmVwbGFjZShuZXcgUmVnRXhwKCcvJywgJ2cnKSwgJycpOw0KICAgICAJCQkJU3lzID0gZS5yZXNvdXJjZS5pZGVudGlmaWVyWzBdLnN5c3RlbS5yZXBsYWNlKCd1cm46b2lkOicsICcnKTsNCiAgICAgCQkJfSBlbHNlIGlmIChlLnJlc291cmNlLnJlc291cmNlVHlwZSA9PSAiRGlhZ25vc3RpY1JlcG9ydCIpIHsNCiAgICAgCQkJCURScyArPSAxOw0KICAgICAJCQl9IGVsc2UgaWYgKGUucmVzb3VyY2UucmVzb3VyY2VUeXBlID09ICJPYnNlcnZhdGlvbiIpDQogICAgIAkJCQlPYnMgKz0gMTsNCiAgICAgCQl9KQ0KICAgICAJfQ0KICAgICAJZW1pdCh7DQogICAgIAkJIk9yZyIgOiBPcmcsDQogICAgIAkJIlN5cyIgOiBTeXMNCiAgICAgCX0sIHsNCiAgICAgCQkiT1JzIiA6IDEsDQogICAgIAkJIkRScyIgOiBEUnMsDQogICAgIAkJIk9icyIgOiBPYnMNCiAgICAgCX0pDQogICAgIH0NCiAgICAgdmFyIHJlZHVjZSA9IGZ1bmN0aW9uIChrZXksIHZhbCkgew0KICAgICAJdmFyIE9ScyA9IDA7DQogICAgIAl2YXIgRFJzID0gMDsNCiAgICAgCXZhciBPYnMgPSAwOw0KICAgICAJZm9yICh2YXIgaSBpbiB2YWwpIHsNCiAgICAgCQlPUnMgKz0gdmFsW2ldLk9SczsNCiAgICAgCQlEUnMgKz0gdmFsW2ldLkRSczsNCiAgICAgCQlPYnMgKz0gdmFsW2ldLk9iczsNCiAgICAgCX0NCiAgICAgCXJldHVybiAoew0KICAgICAJCU9ScyA6IE9ScywNCiAgICAgCQlEUnMgOiBEUnMsDQogICAgIAkJT2JzIDogT2JzDQogICAgIAl9KTsNCiAgICAgfQ0KICAgICBkYi5UcmFuc2FjdGlvbkJ1bmRsZTAubWFwUmVkdWNlKG1hcCwgcmVkdWNlLCB7DQogICAgIAlvdXQgOiAidG1wQWdnIg0KICAgICB9KQ0KICAgICBwcmludGpzb24oZGIudG1wQWdnLmFnZ3JlZ2F0ZSh7DQogICAgIAkJJGdyb3VwIDogew0KICAgICAJCQknX2lkJyA6ICIkX2lkIiwNCiAgICAgCQkJY250T3JzIDogew0KICAgICAJCQkJJHN1bSA6ICIkdmFsdWUuT1JzIg0KICAgICAJCQl9LA0KICAgICAJCQljbnREUnMgOiB7DQogICAgIAkJCQkkc3VtIDogIiR2YWx1ZS5EUnMiDQogICAgIAkJCX0sDQogICAgIAkJCWNudE9icyA6IHsNCiAgICAgCQkJCSRzdW0gOiAiJHZhbHVlLk9icyINCiAgICAgCQkJfQ0KICAgICAJCX0NCiAgICAgCX0sIHsNCiAgICAgCQkkbG9va3VwIDogew0KICAgICAJCQlmcm9tIDogIkRpY3RNTyIsDQogICAgIAkJCWxvY2FsRmllbGQgOiAiX2lkLk9yZyIsDQogICAgIAkJCWZvcmVpZ25GaWVsZCA6ICJtb2d1aWQiLA0KICAgICAJCQlhcyA6ICJkaWN0X21vIg0KICAgICAJCX0NCiAgICAgCX0sIHsNCiAgICAgCQkkbG9va3VwIDogew0KICAgICAJCQlmcm9tIDogIkRpY3RNTyIsDQogICAgIAkJCWxvY2FsRmllbGQgOiAiX2lkLlN5cyIsDQogICAgIAkJCWZvcmVpZ25GaWVsZCA6ICJvaWQiLA0KICAgICAJCQlhcyA6ICJkaWN0X3N5cyINCiAgICAgCQl9DQogICAgIAl9LCB7DQogICAgIAkJJHByb2plY3QgOiB7DQogICAgIAkJCV9pZCA6IDAsDQogICAgIAkJCSJSZWdpb25fY29kZSIgOiB7DQogICAgIAkJCQkkYXJyYXlFbGVtQXQgOiBbIiRkaWN0X21vLnJjb2QiLCAwXQ0KICAgICAJCQl9LA0KICAgICAJCQkiT3JnYW5pemF0aW9uX2lkIiA6ICIkX2lkLk9yZyIsDQogICAgIAkJCSJOYW1lIiA6IHsNCiAgICAgCQkJCSRhcnJheUVsZW1BdCA6IFsiJGRpY3RfbW8ubmFtZSIsIDBdDQogICAgIAkJCX0sDQogICAgIAkJCSJNYWluIiA6IHsNCiAgICAgCQkJCSRhcnJheUVsZW1BdCA6IFsiJGRpY3RfbW8ubWFpbiIsIDBdDQogICAgIAkJCX0sDQogICAgIAkJCSJTeXN0ZW1faWQiIDogIiRfaWQuU3lzIiwNCiAgICAgCQkJIlN5c3RlbV9uYW1lIiA6IHsNCiAgICAgCQkJCSRhcnJheUVsZW1BdCA6IFsiJGRpY3Rfc3lzLnN5c25hbWUiLCAwXQ0KICAgICAJCQl9LA0KICAgICAJCQkiQnVuZGxlcyIgOiAiJGNudE9ycyIsDQogICAgIAkJCSJPYnNlcnZhdGlvbnMiIDogIiRjbnRPYnMiLA0KICAgICAJCX0NCg0KICAgICAJfSwgew0KICAgICAJCSRzb3J0IDogew0KICAgICAJCQkiUmVnaW9uX2NvZGUiIDogMQ0KICAgICAJCX0NCiAgICAgCX0pLnRvQXJyYXkoKSkNCiAgICAgZGIudG1wQWdnLmRyb3AoKQ==';
-                    //$query_string = 'MDlzZGZzZGYnc2RmMHNpZGZkc2RkZA==';
-    $query = query_prepare(base64_decode("$query_string"), $args_array);
+
+    $str = str_replace('/', '-', $str);
+    $stamp = strtotime($str);
+    if (is_numeric($stamp)) {
+
+        $month = date('m', $stamp);
+        $day = date('d', $stamp);
+        $year = date('Y', $stamp);
+
+        return checkdate($month, $day, $year);
+
+    }
+    return false;
+}
+
+
+function query_prepare_mongo($query, $args_array)
+{
+
+    $counter = 0;
+    if ($args_array != []) {
+        while (count($args_array) > $counter) {
+            if (is_Date($args_array[$counter])) {
+                $date = new DateTime($args_array[$counter]);
+                $date -> setTimezone("UTC");
+                $prepquery = preg_replace('/\$' . ($counter + 1) . '/',  $date -> getTimestamp() .'000' , $query);
+                $query = $prepquery;
+
+            } else {
+                $prepquery = preg_replace('/\$' . ($counter + 1) . '/', "'" . $args_array[$counter] . "'", $query);
+                $query = $prepquery;
+            }
+            $counter = $counter + 1;
+        }
+    }
+    return $query;
+}
+
+
+function mongo_query_background($connection_string, $query_string, $args_array, $guid)
+{
+    //$connection_string = '10.20.0.16:27017/test -u"mg" -p"serik-pk" --authenticationDatabase "admin"';
+    //$query_string = 'ICAgICB2YXIgbWFwID0gZnVuY3Rpb24gKCkgew0KICAgICAJaWYgKHRoaXMuZW50cnkpIHsNCiAgICAgCQl2YXIgU3lzOw0KICAgICAJCXZhciBPcmc7DQogICAgIAkJdmFyIERScyA9IDA7DQogICAgIAkJdmFyIE9icyA9IDA7DQogICAgIAkJdGhpcy5lbnRyeS5mb3JFYWNoKGZ1bmN0aW9uIChlKSB7DQogICAgIAkJCWlmIChlLnJlc291cmNlLnJlc291cmNlVHlwZSA9PSAiT3JkZXJSZXNwb25zZSIpIHsNCiAgICAgCQkJCU9yZyA9IGUucmVzb3VyY2Uud2hvLnJlZmVyZW5jZS5yZXBsYWNlKG5ldyBSZWdFeHAoJ09yZ2FuaXphdGlvbicsICdnaScpLCAnJykucmVwbGFjZShuZXcgUmVnRXhwKCcvJywgJ2cnKSwgJycpOw0KICAgICAJCQkJU3lzID0gZS5yZXNvdXJjZS5pZGVudGlmaWVyWzBdLnN5c3RlbS5yZXBsYWNlKCd1cm46b2lkOicsICcnKTsNCiAgICAgCQkJfSBlbHNlIGlmIChlLnJlc291cmNlLnJlc291cmNlVHlwZSA9PSAiRGlhZ25vc3RpY1JlcG9ydCIpIHsNCiAgICAgCQkJCURScyArPSAxOw0KICAgICAJCQl9IGVsc2UgaWYgKGUucmVzb3VyY2UucmVzb3VyY2VUeXBlID09ICJPYnNlcnZhdGlvbiIpDQogICAgIAkJCQlPYnMgKz0gMTsNCiAgICAgCQl9KQ0KICAgICAJfQ0KICAgICAJZW1pdCh7DQogICAgIAkJIk9yZyIgOiBPcmcsDQogICAgIAkJIlN5cyIgOiBTeXMNCiAgICAgCX0sIHsNCiAgICAgCQkiT1JzIiA6IDEsDQogICAgIAkJIkRScyIgOiBEUnMsDQogICAgIAkJIk9icyIgOiBPYnMNCiAgICAgCX0pDQogICAgIH0NCiAgICAgdmFyIHJlZHVjZSA9IGZ1bmN0aW9uIChrZXksIHZhbCkgew0KICAgICAJdmFyIE9ScyA9IDA7DQogICAgIAl2YXIgRFJzID0gMDsNCiAgICAgCXZhciBPYnMgPSAwOw0KICAgICAJZm9yICh2YXIgaSBpbiB2YWwpIHsNCiAgICAgCQlPUnMgKz0gdmFsW2ldLk9SczsNCiAgICAgCQlEUnMgKz0gdmFsW2ldLkRSczsNCiAgICAgCQlPYnMgKz0gdmFsW2ldLk9iczsNCiAgICAgCX0NCiAgICAgCXJldHVybiAoew0KICAgICAJCU9ScyA6IE9ScywNCiAgICAgCQlEUnMgOiBEUnMsDQogICAgIAkJT2JzIDogT2JzDQogICAgIAl9KTsNCiAgICAgfQ0KICAgICBkYi5UcmFuc2FjdGlvbkJ1bmRsZTAubWFwUmVkdWNlKG1hcCwgcmVkdWNlLCB7DQogICAgIAlvdXQgOiAidG1wQWdnIg0KICAgICB9KQ0KICAgICBwcmludGpzb24oZGIudG1wQWdnLmFnZ3JlZ2F0ZSh7DQogICAgIAkJJGdyb3VwIDogew0KICAgICAJCQknX2lkJyA6ICIkX2lkIiwNCiAgICAgCQkJY250T3JzIDogew0KICAgICAJCQkJJHN1bSA6ICIkdmFsdWUuT1JzIg0KICAgICAJCQl9LA0KICAgICAJCQljbnREUnMgOiB7DQogICAgIAkJCQkkc3VtIDogIiR2YWx1ZS5EUnMiDQogICAgIAkJCX0sDQogICAgIAkJCWNudE9icyA6IHsNCiAgICAgCQkJCSRzdW0gOiAiJHZhbHVlLk9icyINCiAgICAgCQkJfQ0KICAgICAJCX0NCiAgICAgCX0sIHsNCiAgICAgCQkkbG9va3VwIDogew0KICAgICAJCQlmcm9tIDogIkRpY3RNTyIsDQogICAgIAkJCWxvY2FsRmllbGQgOiAiX2lkLk9yZyIsDQogICAgIAkJCWZvcmVpZ25GaWVsZCA6ICJtb2d1aWQiLA0KICAgICAJCQlhcyA6ICJkaWN0X21vIg0KICAgICAJCX0NCiAgICAgCX0sIHsNCiAgICAgCQkkbG9va3VwIDogew0KICAgICAJCQlmcm9tIDogIkRpY3RNTyIsDQogICAgIAkJCWxvY2FsRmllbGQgOiAiX2lkLlN5cyIsDQogICAgIAkJCWZvcmVpZ25GaWVsZCA6ICJvaWQiLA0KICAgICAJCQlhcyA6ICJkaWN0X3N5cyINCiAgICAgCQl9DQogICAgIAl9LCB7DQogICAgIAkJJHByb2plY3QgOiB7DQogICAgIAkJCV9pZCA6IDAsDQogICAgIAkJCSJSZWdpb25fY29kZSIgOiB7DQogICAgIAkJCQkkYXJyYXlFbGVtQXQgOiBbIiRkaWN0X21vLnJjb2QiLCAwXQ0KICAgICAJCQl9LA0KICAgICAJCQkiT3JnYW5pemF0aW9uX2lkIiA6ICIkX2lkLk9yZyIsDQogICAgIAkJCSJOYW1lIiA6IHsNCiAgICAgCQkJCSRhcnJheUVsZW1BdCA6IFsiJGRpY3RfbW8ubmFtZSIsIDBdDQogICAgIAkJCX0sDQogICAgIAkJCSJNYWluIiA6IHsNCiAgICAgCQkJCSRhcnJheUVsZW1BdCA6IFsiJGRpY3RfbW8ubWFpbiIsIDBdDQogICAgIAkJCX0sDQogICAgIAkJCSJTeXN0ZW1faWQiIDogIiRfaWQuU3lzIiwNCiAgICAgCQkJIlN5c3RlbV9uYW1lIiA6IHsNCiAgICAgCQkJCSRhcnJheUVsZW1BdCA6IFsiJGRpY3Rfc3lzLnN5c25hbWUiLCAwXQ0KICAgICAJCQl9LA0KICAgICAJCQkiQnVuZGxlcyIgOiAiJGNudE9ycyIsDQogICAgIAkJCSJPYnNlcnZhdGlvbnMiIDogIiRjbnRPYnMiLA0KICAgICAJCX0NCg0KICAgICAJfSwgew0KICAgICAJCSRzb3J0IDogew0KICAgICAJCQkiUmVnaW9uX2NvZGUiIDogMQ0KICAgICAJCX0NCiAgICAgCX0pLnRvQXJyYXkoKSkNCiAgICAgZGIudG1wQWdnLmRyb3AoKQ==';
+    //$query_string = 'MDlzZGZzZGYnc2RmMHNpZGZkc2RkZA==';
+    $query = query_prepare_mongo(base64_decode("$query_string"), $args_array);
     $pre_query_string = str_replace('$', '\$', $query);
     global $query_id;
     $query_id = $guid;
@@ -83,13 +123,13 @@ EOF", $a);
                 $result_json->status = "0";
             }
         }
-        $final =  json_encode($result_json, JSON_UNESCAPED_UNICODE);
+        $final = json_encode($result_json, JSON_UNESCAPED_UNICODE);
     } else {
-        $result_json->status = 2;
+        $result_json->status = "2";
         $result_json->exception = $a;
-        $final =  json_encode($result_json, JSON_UNESCAPED_UNICODE);
+        $final = json_encode($result_json, JSON_UNESCAPED_UNICODE);
     }
-    exec('rm /tmp/' . $query_id . '.js');
+    //exec('rm /tmp/' . $query_id . '.js');
 
 //    function sig_handler($signo)
 //    {
@@ -103,5 +143,5 @@ EOF", $a);
     set_new_result($guid, $final, ' ');
 }
 
-mongo_query_background($connection_string,$query_string,$args_array,$guid);
+mongo_query_background($connection_string, $query_string, $args_array, $guid);
 

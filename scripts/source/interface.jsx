@@ -151,7 +151,7 @@ var Interface = React.createClass({
             <div className="wrapper" id="wrapper">
                 <div className="ui" id="ui">
                     <div className="logo">
-                        Postgres Reports
+                        Database Reports
                     </div>
                     <div>
                         <select onChange={this.setCurrDS} value={this.state.currDS}>

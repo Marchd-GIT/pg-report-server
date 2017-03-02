@@ -172,9 +172,16 @@ function get_select_row()
         if ($val->id == $json_params->ID_Params)
             $sql_query = $val->query;
     }
+
+    $cur_dataset = (object)[];
+    foreach ($datasets as $dataset) {
+        if ($dataset->ID_Report == $json_params->DataSet)
+            $cur_dataset = $dataset;
+    }
+
     $empty = [];
     if ($sql_query != '') {
-        query_run(get_connection_string($datasets[$json_params->DataSet]->DataStore), $empty, $sql_query, 'pg_small', '');
+        query_run(get_connection_string($cur_dataset->DataStore), $empty, $sql_query, 'pg_small', '');
     }
 }
 
@@ -257,7 +264,7 @@ function query_run($connection_string, $args_array, $query_string, $type, $name)
     } elseif ($type == 'pg_small') {
         $dbconn = pg_connect($connection_string);
         if (!$dbconn) {
-            echo genERROR('In function query_run() an error occured connect to database.');
+            echo genERROR('In function query_run() an error occured connect to database');
             exit;
         }
         $query = query_prepare(base64_decode("$query_string"), $args_array);
