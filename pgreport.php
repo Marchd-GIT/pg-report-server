@@ -208,6 +208,7 @@ function get_datasets($flag)
         if (preg_match('/.*.json/', $entry))
             array_push($files, $entry);
     }
+    asort($files);
     $datasets = array();
     foreach ($files as $val) {
         if ($flag)
