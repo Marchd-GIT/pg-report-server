@@ -39,7 +39,7 @@ function query_prepare_mongo($query, $args_array)
                 $query = $prepquery;
 
             } else {
-                $prepquery = preg_replace('/\$' . ($counter + 1) . '/', "'" . $args_array[$counter] . "'", $query);
+                $prepquery = preg_replace('/\$' . ($counter + 1) . '/',$args_array[$counter], $query);
                 $query = $prepquery;
             }
             $counter = $counter + 1;
@@ -51,10 +51,9 @@ function query_prepare_mongo($query, $args_array)
 
 function mongo_query_background($connection_string, $query_string, $args_array, $guid)
 {
-
     $query = query_prepare_mongo(base64_decode("$query_string"), $args_array);
     $pre_query_string = str_replace('$', '\$', $query);
-    global $query_id;
+    global $query_id,$debug;
     $query_id = $guid;
     set_new_result($guid, '', getmypid());
     $r = exec("cat <<EOF > /tmp/" . $query_id . ".js &&  mongo --quiet " . $connection_string . " /tmp/" . $query_id . ".js 2>&1
@@ -63,12 +62,16 @@ EOF", $a);
 
     $result_json = (object)[
         "status" => '',
+        "debug" => '',
         "body" => (object)[
             "fields" => [],
             "rows" => []
         ]
     ];
-
+    if(@$debug > 1)
+    {
+        $result_json->debug = base64_encode($pre_query_string);
+    }
 
     if (@ $json_obj = json_decode(implode($a))) {
         foreach ($json_obj as $key => $value) {
