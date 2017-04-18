@@ -91,7 +91,7 @@ EOF", $a);
                 $result_json->body->rows[$key][$i] = $value1;
                 $i++;
             }
-            if ($key > 0) {
+            if ($key >= 0) {
                 $result_json->status = "0";
             }
         }
