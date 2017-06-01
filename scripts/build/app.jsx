@@ -54,7 +54,7 @@ var DeferredReports = React.createClass({
         var id = dataRequest.id;
         $.ajax({
             type: "POST",
-            url: '/st.php',
+            url: 'st.php',
             data: {action: 'rm_result', id: id},
             success: function (data) {
                 this.getDReportsInfo();
@@ -171,7 +171,7 @@ var QuerySelect = React.createClass({
         var data = JSON.stringify({'DataSet': this.props.currDS.ds, 'ID_Params': id});
         $.ajax({
             type: "POST",
-            url: '/st.php',
+            url: 'st.php',
             data: {action: 'get_select_row', query: data},
             success: function (data) {
                 this.prepareQuery(data);
@@ -215,7 +215,7 @@ var Interface = React.createClass({
     getDatasets: function () {
         $.ajax({
             type: "POST",
-            url: '/st.php',
+            url: 'st.php',
             data: {action: 'get_datasets'},
             success: function (data) {
                 this.setState({dataSets: data});
@@ -333,7 +333,7 @@ var Interface = React.createClass({
         var data = this.prepareData();
         $.ajax({
             type: "POST",
-            url: '/st.php',
+            url: 'st.php',
             data: {action: 'run_query', query: data},
             success: function (data) {
                 this.setState({status: 'ready'});
@@ -408,7 +408,7 @@ var SingleDeferredReport = React.createClass({
         var id = dataRequest.id;
         $.ajax({
             type: "POST",
-            url: '/st.php',
+            url: 'st.php',
             data: {action: 'get_result', id: id, format: "json"},
             success: function (data) {
                 if (data.status == '0') {
@@ -432,7 +432,7 @@ var SingleDeferredReport = React.createClass({
             var date = dataRequest.creation_date;
             $.ajax({
                 type: "POST",
-                url: '/st.php',
+                url: 'st.php',
                 data: {action: 'get_result', id: id, format: "json"},
                 success: function (data) {
                     switch (data.status) {
@@ -466,7 +466,7 @@ var SingleDeferredReport = React.createClass({
         var name = dataRequest.name;
         $.ajax({
             type: "POST",
-            url: '/st.php',
+            url: 'st.php',
             data: {action: 'get_result', id: id, format: "csv"},
             success: function (data) {
                 var blob = new Blob([data]);
@@ -488,7 +488,7 @@ var SingleDeferredReport = React.createClass({
 
         $.ajax({
             type: "POST",
-            url: '/st.php',
+            url: 'st.php',
             data: {action: 'get_result', id: id, format: "xls"},
             success: function (data) {
                 var blob = new Blob([data]);
