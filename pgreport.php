@@ -280,7 +280,7 @@ function query_run($connection_string, $args_array, $query_string, $type, $name)
         return_cookie($guid, $name, $args_array);
         header('Content-Type: application/json');
         $arr_send = json_encode($args_array);
-        echo '{"status" : "1","id":$guid}';
+        echo '{"status" : "1","id":"'.$guid.'"}';
         exec("php ./mongoreport.php '" . "$connection_string" . "' '" . "$arr_send" . "' '" . "$query_string" . "' '" . "$guid" . "'> /dev/null 2>/dev/null &", $a);
     }
     else {

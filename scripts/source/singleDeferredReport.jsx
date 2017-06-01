@@ -26,7 +26,7 @@ var SingleDeferredReport = React.createClass({
         var id = dataRequest.id;
         $.ajax({
             type: "POST",
-            url: '/st.php',
+            url: 'st.php',
             data: {action: 'get_result', id: id, format: "json"},
             success: function (data) {
                 if (data.status == '0') {
@@ -50,7 +50,7 @@ var SingleDeferredReport = React.createClass({
             var date = dataRequest.creation_date;
             $.ajax({
                 type: "POST",
-                url: '/st.php',
+                url: 'st.php',
                 data: {action: 'get_result', id: id, format: "json"},
                 success: function (data) {
                     switch (data.status) {
@@ -84,7 +84,7 @@ var SingleDeferredReport = React.createClass({
         var name = dataRequest.name;
         $.ajax({
             type: "POST",
-            url: '/st.php',
+            url: 'st.php',
             data: {action: 'get_result', id: id, format: "csv"},
             success: function (data) {
                 var blob = new Blob([data]);
@@ -106,7 +106,7 @@ var SingleDeferredReport = React.createClass({
 
         $.ajax({
             type: "POST",
-            url: '/st.php',
+            url: 'st.php',
             data: {action: 'get_result', id: id, format: "xls"},
             success: function (data) {
                 var blob = new Blob([data]);

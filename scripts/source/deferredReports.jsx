@@ -13,7 +13,7 @@ var DeferredReports = React.createClass({
         var id = dataRequest.id;
         $.ajax({
             type: "POST",
-            url: '/st.php',
+            url: 'st.php',
             data: {action: 'rm_result', id: id},
             success: function (data) {
                 this.getDReportsInfo();
