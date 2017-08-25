@@ -117,7 +117,24 @@ var SingleDeferredReport = React.createClass({
             }.bind(this)
         });
     },
+    sendToEmail: function (e) {
+        this.setState({state: 'loading'});
+        var position = e.target.name;
+        var queries = JSON.parse(this.getCookie('QUERIES'));
+        var dataRequest = queries[position];
+        var id = dataRequest.id;
+        var name = dataRequest.name.replace(/\+/g, ' ') + ' ' + dataRequest.arguments.join(' ');
+        var Email = document.getElementById(id).value;
 
+        $.ajax({
+            type: "POST",
+            url: 'st.php',
+            data: {email: Email,action: 'get_result', id: id, format: "email",name: name},
+            success: function (data) {
+                document.getElementById(id).value = 'Письмо отправлено.';
+            }.bind(this)
+        });
+    },
     render: function () {
         var item = this.props.data.item;
         var index = this.props.data.index;
@@ -141,6 +158,10 @@ var SingleDeferredReport = React.createClass({
                 <button name={index} onClick={this.getDataXLS}>
                     XLS
                 </button>
+                <button name={index} onClick={this.sendToEmail}>
+                    Oтправить на почту
+                </button>
+                <input name={index} id={this.props.data.item.id} placeholder="E-Mail" type="email" className="emailInput"></input>
             </div>
         )
     }

@@ -163,7 +163,15 @@ html, body {
     border-collapse: collapse;
 }
 
-
+.emailInput {
+    width: 154px;
+    margin-top: 5px;
+    /*background-image: url(/image/mail-icon.png);*/
+    /*background-repeat: no-repeat;*/
+    /*background-position: 2px 1px;*/
+    /*background-size: 22px;*/
+    /*padding: 0 27px;*/
+}
 
 th {
     padding: 5px; /* Поля вокруг содержимого ячеек */

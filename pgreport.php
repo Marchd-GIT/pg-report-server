@@ -86,7 +86,8 @@ function get_result_by_id()
 {
     $format = isset($_POST['format']) ? $_POST['format'] : '';
     $id = isset($_POST['id']) ? $_POST['id'] : '';
-
+    $email = isset($_POST['email']) ? $_POST['email'] : '';
+    $name = isset($_POST['name']) ? $_POST['name'] : '';
     $query = "SELECT * FROM query_result WHERE id = '" . "$id" . "' limit 1";
     $result = sqlite_query_action($query);
     $res = '';
@@ -106,6 +107,9 @@ function get_result_by_id()
                     break;
                 case "csv":
                     json_to_csv($res);
+                    break;
+                case "email":
+                    json_to_mail($res,$email,$name);
                     break;
                 default:
                     echo '{"status" : "2"}';
@@ -409,6 +413,26 @@ function json_to_csv($result_json)
     }
 }
 
+function json_to_mail($result_json,$email,$subject)
+{
+    $result = json_decode($result_json);
+    $body =  '<html><meta charset="utf-8"><body><table height=auto width=auto border=\'1\' rules=\'rows\' ><tr>';
+    foreach ($result->body->fields as $fieldName) {
+        $body .= '<th bgcolor=\'#16a085\'>' . $fieldName . '</th>';
+    }
+    $body .= "</tr>";
+    foreach ($result->body->rows as $row) {
+        $body .= "<tr>";
+        foreach ($row as $item) {
+            $body .= "<td>" . $item . "</td>";
+        }
+        $body .= "</tr>";
+
+    }
+    $body .= '</table></body></html>';
+    sendMail($email,$subject,$body);
+}
+
 function query_fast($dbconn)
 {
     $result = (object)[];
@@ -467,6 +491,25 @@ function json_query_run()
 
     } else {
         echo genERROR('in function json_query_run() query is empty');
+    }
+
+}
+
+function sendMail($to,$subject,$table)
+{
+    global $mail_from;
+    $eol = "\r\n";
+    $headers = "From: " . $mail_from . $eol;
+    $headers .= "Content-Type: application/octet-stream; name=\"" . $subject . ".xls" . "\"" . $eol;
+    $headers.= "Content-Transfer-Encoding: base64" . $eol;
+    $headers .= "Content-Disposition: attachment; filename=\"" . $subject . ".xls" . "\"" . $eol;
+    $body = chunk_split(base64_encode($table)) . $eol;
+
+    if (mail($to, $subject, $body, $headers)) {
+        echo '{"status" : "0","detail":"mail sending successful"}';
+    } else {
+        echo "mail send ... ERROR!";
+        print_r( error_get_last() );
     }
 
 }
