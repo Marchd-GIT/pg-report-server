@@ -170,10 +170,10 @@ var Interface = React.createClass({
                         <br/>
                     </div>
                     <div>
-                        <DeferredReports interface={{interface:this}} />
+                        <DeferredReports interface={{interface: this}}/>
                     </div>
                 </div>
-                <div className="dataTable" >
+                <div className="dataTable">
                     {this.state.status == 'loading' ? 'loading...' : this.state.error ? this.state.error : this.drawTable()}
                 </div>
             </div>

@@ -24,6 +24,8 @@ var SingleDeferredReport = React.createClass({
         var queries = JSON.parse(this.getCookie('QUERIES'));
         var dataRequest = queries[position];
         var id = dataRequest.id;
+        delete dataRequest["is_owner"];
+        window.history.pushState("","", "?Report="+JSON.stringify(dataRequest));
         $.ajax({
             type: "POST",
             url: 'st.php',

@@ -103,6 +103,7 @@ EOF", $a);
     }
 
     set_new_result($guid, $final, ' ');
+    exec("rm /tmp/" . $query_id . ".js");
 }
 
 mongo_query_background($connection_string, $query_string, $args_array, $guid);

@@ -299,7 +299,8 @@ function return_cookie($guid, $name, $args_array)
         "id" => $guid,
         "name" => $name,
         "creation_date" => date("Y-m-d H:i:s"),
-        "arguments" => $args_array
+        "arguments" => $args_array,
+        "is_owner" => "True"
     ];
 
     $queries_from_cookie = isset($_COOKIE['QUERIES']) ? $_COOKIE['QUERIES'] : '';
