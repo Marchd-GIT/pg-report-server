@@ -501,7 +501,7 @@ function sendMail($to,$subject,$table)
     global $mail_from;
     $eol = "\r\n";
     $headers = "From: " . $mail_from . $eol;
-    $headers .= "Content-Type: application/octet-stream; name=\"" . $subject . ".xls" . "\"" . $eol;
+    $headers .= "Content-Type: application/octet-stream;  charset=UTF-8; name=\"" . $subject . ".xls" . "\"" . $eol;
     $headers.= "Content-Transfer-Encoding: base64" . $eol;
     $headers .= "Content-Disposition: attachment; filename=\"" . $subject . ".xls" . "\"" . $eol;
     $body = chunk_split(base64_encode($table)) . $eol;
