@@ -467,8 +467,7 @@ function query_slow($dbconn, $guid)
         echo genERROR('in function query_slow() SQL result returned error');
         exit;
     }
-    $final = json_encode(result_to_json($result));
-
+    $final = json_encode(result_to_json($result), JSON_HEX_TAG | JSON_HEX_APOS | JSON_HEX_QUOT | JSON_HEX_AMP | JSON_UNESCAPED_UNICODE );
     set_new_result($guid, $final, ' ');
     pg_free_result($result);
 }
