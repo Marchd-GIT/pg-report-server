@@ -83,13 +83,7 @@ var QuerySelect = React.createClass({
         return (
             <div>
                 <p>{this.props.item.params.name}</p>
-                <center>
-                <input type="search" id="brand-filter" placeholder="Rechercher..." name="brands" data-list="brands-list" autocomplete="off" required />
-                <label for="brand-filter" data-icon="🔍"></label>
-                <datalist id="brands-list">
                 <select id={this.props.item.params.id}>{this.state.options}</select>
-                </datalist>
-                </center>
             </div>
         );
     }

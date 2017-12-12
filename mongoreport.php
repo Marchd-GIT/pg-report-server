@@ -56,7 +56,7 @@ function mongo_query_background($connection_string, $query_string, $args_array, 
     global $query_id,$debug;
     $query_id = $guid;
     set_new_result($guid, '', getmypid());
-    $r = exec("cat <<EOF > /tmp/" . $query_id . ".js &&  mongo --quiet " . $connection_string . " /tmp/" . $query_id . ".js 2>&1
+    $r = exec("cat <<EOF > ./" . $query_id . ".js &&  mongo --quiet " . $connection_string . " ./" . $query_id . ".js 2>&1
 " . $pre_query_string . "
 EOF", $a);
 
@@ -103,7 +103,7 @@ EOF", $a);
     }
 
     set_new_result($guid, $final, ' ');
-    exec("rm /tmp/" . $query_id . ".js");
+    exec("rm ./" . $query_id . ".js");
 }
 
 mongo_query_background($connection_string, $query_string, $args_array, $guid);
